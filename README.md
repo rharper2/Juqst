@@ -82,15 +82,15 @@ The basis behind this papers is that we can implement a one-to-one mapping betwe
 
 The mapping is as follows:
 
-<img src="Clifford Mapping.png">Mapping png</img>
+<img src="Clifford Mapping.png">Koenig/Smolin arXiv:quant-ph/1406.2170</img>
 
 We can generate the alpha,beta,gamma and delta via
 
-`symplectic(i,n) # i = integer represting the clifford, n is the number of qubits
+   symplectic(i,n) # i = integer represting the clifford, n is the number of qubits
 
 Which returns the nxn arrays (alpha->delta) coded as follows:
 
-<img src="coding.png">coding png</img>
+<img src="coding.png">Koenig/Smolin arXiv:quant-ph/1406.2170</img>
 
 More usefully these can be placed into a stabiliser tableau (that is the equivlent of passing the state |0000> through a gate that implements the unitary in question as follows:
 
@@ -100,7 +100,7 @@ e.g.
 
     state = stabiliseSymp(symplectic(23,4)) # for the tableau of clifford '23' in a 4 qubit system
 
-Of course there are actually 4^4 version of of symplectic 23, because of the different phases that we can have - this will be implemented shortly.
+Of course there are actually 4^n versions of of symplectic 23 (here n = 4), because of the different phases that we can have - this will be implemented shortly.
 
 # Decomposing a tableau (such as clifford)
 
