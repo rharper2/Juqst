@@ -147,7 +147,8 @@ You will also need from within Julia to add the ImageView package Pkg.add("Image
 
 Here is a sample IJulia session showing how to use the new drawcircuit functionality.
 
-[IJulia example notebook](./Example of Draw Circuit.html)
+HTML -> download and open with browser (clicking just gives source just now) [IJulia example notebook](./Example of Draw Circuit.html)
+PDF -> should render fine in browser [IJulia pdf of example notebook](./Notebook.pdf)
 
     getState(state) 
 
