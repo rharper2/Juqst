@@ -1,0 +1,15 @@
+quibit q1
+quibit q2
+quibit q3
+quibit q4
+h q4
+h q3
+h q2
+h q1
+cnot q3,q2
+cnot q3,q1
+h q3
+cnot q2,q3
+cnot q2,q1
+cnot q1,q2
+h q4

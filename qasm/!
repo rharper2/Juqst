@@ -1,0 +1,89 @@
+%     qubit q1
+%     qubit q2
+%     qubit q3
+%     qubit q4
+%      h q4
+%      h q3
+%      h q2
+%      h q1
+%      cnot q3,q2
+%      cnot q3,q1
+%      h q3
+%      cnot q2,q3
+%      cnot q2,q1
+%      cnot q1,q2
+%      h q4
+
+%  Time 01:
+%    Gate 00 h(q4)
+%    Gate 01 h(q3)
+%    Gate 02 h(q2)
+%    Gate 03 h(q1)
+%  Time 02:
+%    Gate 04 cnot(q3,q2)
+%    Gate 10 h(q4)
+%  Time 03:
+%    Gate 05 cnot(q3,q1)
+%  Time 04:
+%    Gate 06 h(q3)
+%  Time 05:
+%    Gate 07 cnot(q2,q3)
+%  Time 06:
+%    Gate 08 cnot(q2,q1)
+%  Time 07:
+%    Gate 09 cnot(q1,q2)
+
+% Qubit circuit matrix:
+%
+% q1: gAxA, n  , gCxA, n  , n  , gFxA, gGxA, n  
+% q2: gAxB, gBxB, n  , n  , gExB, gFxB, gGxB, n  
+% q3: gAxC, gBxC, gCxC, gDxC, gExC, n  , n  , n  
+% q4: gAxD, gBxD, n  , n  , n  , n  , n  , n  
+
+\documentclass[11pt]{article}
+\input{xyqcirc.tex}
+
+% definitions for the circuit elements
+
+\def\gAxD{\op{H}\w\A{gAxD}}
+\def\gAxC{\op{H}\w\A{gAxC}}
+\def\gAxB{\op{H}\w\A{gAxB}}
+\def\gAxA{\op{H}\w\A{gAxA}}
+\def\gBxC{\b\w\A{gBxC}}
+\def\gBxB{\o\w\A{gBxB}}
+\def\gCxC{\b\w\A{gCxC}}
+\def\gCxA{\o\w\A{gCxA}}
+\def\gDxC{\op{H}\w\A{gDxC}}
+\def\gExB{\b\w\A{gExB}}
+\def\gExC{\o\w\A{gExC}}
+\def\gFxB{\b\w\A{gFxB}}
+\def\gFxA{\o\w\A{gFxA}}
+\def\gGxA{\b\w\A{gGxA}}
+\def\gGxB{\o\w\A{gGxB}}
+\def\gBxD{\op{H}\w\A{gBxD}}
+
+% definitions for bit labels and initial states
+
+\def\bA{ \q{q_{1}}}
+\def\bB{ \q{q_{2}}}
+\def\bC{ \q{q_{3}}}
+\def\bD{ \q{q_{4}}}
+
+% The quantum circuit as an xymatrix
+
+\xymatrix@R=5pt@C=10pt{
+    \bA & \gAxA &\n   &\gCxA &\n   &\n   &\gFxA &\gGxA &\n  
+\\  \bB & \gAxB &\gBxB &\n   &\n   &\gExB &\gFxB &\gGxB &\n  
+\\  \bC & \gAxC &\gBxC &\gCxC &\gDxC &\gExC &\n   &\n   &\n  
+\\  \bD & \gAxD &\gBxD &\n   &\n   &\n   &\n   &\n   &\n  
+%
+% Vertical lines and other post-xymatrix latex
+%
+\ar@{-}"gBxB";"gBxC"
+\ar@{-}"gCxA";"gCxC"
+\ar@{-}"gExC";"gExB"
+\ar@{-}"gFxA";"gFxB"
+\ar@{-}"gGxB";"gGxA"
+}
+
+\end{document}

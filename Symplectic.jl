@@ -24,6 +24,8 @@
 #   m1 0
 #   0 m2
 
+using ImageView,Images
+
 function directsum(m1,m2)
   n1=size(m1)[1]
   n2=size(m2)[1]
@@ -288,13 +290,13 @@ function getFullRank(svec)
 		hadamard(svec,i,false)
 		r2 = rank(svec[n+1:2*n,1:n])
 		if (r2 == n )
-			#println("hadamard(svec,",i,")")
-			addCommand("hadamard(svec,$i)",Expr(:call,:hadamard,:svec,i))
+			#println("hadamard(",i,")")
+			addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
 			return
 		end
 		if (r2 > r1) 
-			#println("hadamard(svec,",i,")",Expr(:call,:hadamard,:svec,i))
-			addCommand("hadamard(svec,$i)",Expr(:call,:hadamard,:svec,i))
+			#println("hadamard(",i,")",Expr(:call,:hadamard,:svec,i))
+			addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
 			continue
 		else
 			hadamard(svec,i,false)
@@ -360,19 +362,19 @@ function identifytheRow(svec,offset,i)
 						return;
 					end
 					cnot(svec,t+i,i,false)
-					#println("cnot(svec,",j,",",i,")")
-					addCommand("cnot(svec,$j,$i,)",Expr(:call,:cnot,:svec,j,i))
+					#println("cnot(",j,",",i,")")
+					addCommand("cnot($j,$i,)",Expr(:call,:cnot,:svec,j,i))
 				else 
 					#println("hadmard(svec,",i,")")
-					addCommand("hadamard(svec,$i)",Expr(:call,:hadamard,:svec,i))
+					addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
 				end
 			else
 				#println("Diagonal was alread one")
 			end
 			#println("Using the diagonal to zap");
 			#cnot from this found bit, to bit i, to turn it to zero
-			#println("cnot(svec,",i,",",j,")")
-			addCommand("cnot(svec,$i,$j)",Expr(:call,:cnot,:svec,i,j))
+			#println("cnot(",i,",",j,")")
+			addCommand("cnot($i,$j)",Expr(:call,:cnot,:svec,i,j))
 			cnot(svec,i,j,false)
 			#println(svec)
 		end
@@ -387,8 +389,8 @@ function identifytheRow(svec,offset,i)
 			return false
 		end
 		cnot(svec,t,i,false)
-		#println("cnot(svec,",t,",",i,")")
-		addCommand("cnot(svec,$t,$i)",Expr(:call,:cnot,:svec,t,i))
+		#println("cnot(",t,",",i,")")
+		addCommand("cnot($t,$i)",Expr(:call,:cnot,:svec,t,i))
 		#println(svec)
 	end
 	# so the diagonal element is now 1, make the rest zero
@@ -397,8 +399,8 @@ function identifytheRow(svec,offset,i)
 		if svec[offset+i,j]==1
 			#println("It was one")
 			cnot(svec,i,j,false)
-			#println("cnot(svec,",i,",",j,")")
-			addCommand("cnot(svec,$i,$j)",Expr(:call,:cnot,:svec,i,j))
+			#println("cnot(",i,",",j,")")
+			addCommand("cnot($i,$j)",Expr(:call,:cnot,:svec,i,j))
 			#println(svec)
 		end
 	end
@@ -410,8 +412,8 @@ function diagonaliseD(svec)
 	for i=1:n
 		if svec[n+i,n+i]== 0
 			phase(svec,i,false)
-			#println("phase(svec,",i,")");
-			addCommand("phase(svec,$i)",Expr(:call,:phase,:svec,i))
+			#println("phase(",i,")");
+			addCommand("phase($i)",Expr(:call,:phase,:svec,i))
 		end
 	end
 end
@@ -421,8 +423,8 @@ function diagonaliseB(svec)
 	for i=1:n
 		if svec[i,n+i]== 0
 			phase(svec,i,false)
-			#println("phase(svec,",i,")");
-			addCommand("phase(svec,$i)",Expr(:call,:phase,:svec,i))
+			#println("phase(",i,")");
+			addCommand("phase($i)",Expr(:call,:phase,:svec,i))
 		end
 	end
 end
@@ -436,12 +438,12 @@ function cmdm(svec)
 			end
 			if svec[n+i,j] == 0
 				cnot(svec,j,i,false)
-				#println("cnot(svec,",j,",",i,")")
-				addCommand("cnot(svec,$j,$i)",Expr(:call,:cnot,:svec,j,i))
+				#println("cnot(",j,",",i,")")
+				addCommand("cnot($j,$i)",Expr(:call,:cnot,:svec,j,i))
 			else 
 				phase(svec,j,false)
-				#println("phase(svec,",j,")")
-				addCommand("phase(svec,$j)",Expr(:call,:phase,:svec,i))
+				#println("phase(",j,")")
+				addCommand("phase($j)",Expr(:call,:phase,:svec,i))
 			end
 		end
 	end
@@ -455,12 +457,12 @@ function ambm(svec)
 			end
 			if svec[i,j] == 0
 				cnot(svec,j,i,false)
-				#println("cnot(svec,",j,",",i,")")
-				addCommand("cnot(svec,$j,$i)",Expr(:call,:cnot,:svec,j,i))
+				#println("cnot(",j,",",i,")")
+				addCommand("cnot($j,$i)",Expr(:call,:cnot,:svec,j,i))
 			else 
 				phase(svec,j,false)
-				#println("phase(svec,",j,")")
-				addCommand("phase(svec,$j)",Expr(:call,:phase,:svec,j))
+				#println("phase(",j,")")
+				addCommand("phase($j)",Expr(:call,:phase,:svec,j))
 			end
 		end
 	end
@@ -472,8 +474,8 @@ function zapD(svec)
 		for j=1:n
 			if svec[n+i,n+j]==1
 				phase(svec,j,false)
-				#println("phase(svec,",j,")")
-				addCommand("phase(svec,$j)",Expr(:call,:phase,:svec,j))
+				#println("phase(",j,")")
+				addCommand("phase($j)",Expr(:call,:phase,:svec,j))
 			end
 		end
 	end
@@ -485,8 +487,8 @@ function zapB(svec)
 		for j=1:n
 			if svec[i,n+j]==1
 				phase(svec,j,false)
-				#println("phase(svec,",j,")")
-				addCommand("phase(svec,$j)",Expr(:call,:phase,:svec,j))
+				#println("phase(",j,")")
+				addCommand("phase($j)",Expr(:call,:phase,:svec,j))
 			end
 		end
 	end
@@ -496,8 +498,8 @@ function hadamardHard(svec)
 	n=div(size(svec,1),2) # half the dimension of this 2n x (2n+1) matrix
 	for i=1:n
 		hadamard(svec,i,false)
-		#println("hadamard(svec,",i,")")
-		addCommand("hadamard(svec,$i)",Expr(:call,:hadamard,:svec,i))
+		#println("hadamard(",i,")")
+		addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
 	end
 end
 
@@ -510,10 +512,10 @@ function makeItR0(svec,offset=-1)
 		if svec[offset+i,2*n+1]== 1
 			phase(svec,i,false)
 			phase(svec,i,false)
-			#println("phase(svec,",i,")")
-			#println("phase(svec,",i,")")
-			addCommand("phase(svec,$i)",Expr(:call,:phase,:svec,i))
-			addCommand("phase(svec,$i)",Expr(:call,:phase,:svec,i))
+			#println("phase(",i,")")
+			#println("phase(",i,")")
+			addCommand("phase($i)",Expr(:call,:phase,:svec,i))
+			addCommand("phase($i)",Expr(:call,:phase,:svec,i))
 		end
 	end
 end
@@ -547,6 +549,41 @@ function decompose(i,j=4,supressOutput = false)
 	end
 end
 
+
+function drawCircuit()
+	global commands
+	cOut = open("qasm/temp.qasm","w")
+	for i = 1:size(commands,1)
+		m = match(r"setup\((.*)\)",commands[i])
+		if (m!=nothing)
+    		for i=1:int(m.captures[1])
+    			println(cOut,"    qubit q$i")
+			end
+    	else
+    		m=match(r"hadamard\((.*)\)",commands[i])
+    		if (m!=nothing)
+    			println(cOut,"     h q",m.captures[1])
+    		else 
+    			m=match(r"phase\((.*)\)",commands[i])
+    			if (m!=nothing) # QASM doesn't appear to have Phase gates, so output an S
+    				# I altered QASM to print a P instead of an S.
+    				println(cOut,"     S q",m.captures[1])
+    			else
+    				m=match(r"cnot\((.*),(.*)\)",commands[i])
+    				if (m!=nothing)
+    					println(cOut,"     cnot q",m.captures[1],",q",m.captures[2])
+    				end
+    			end
+    		end
+    	end
+    end
+    close(cOut)
+    cd("qasm")
+	test = `csh qasm2png temp.qasm`
+	temp = readall(test) 
+	cd("..")
+	img = imread("qasm/temp.png")
+end
 
 function nextStep(ss1)
 	currentState = getState(ss1)

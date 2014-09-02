@@ -6,10 +6,10 @@
 * Implement the simulation of Stabiliser Circuits (Aaronson/Gottesman arXiv:quant-ph/0406196)
 * Implement ability to select an arbitrary Clifford group element (Koenig/Smolin arXiv:quant-ph/1406.2170) (not quite complete - phases not implemented properly yet)
 * Implement the ability to decompose an arbitrary clifford unitary into a quantum circuit consistiting of hadamard, phase and two-qubit cnot gates.(Aaronson/Gottesman arXiv:quant-ph/0406196)
-
+* Draw the quantum circuit resulting from the decomposition of the clifford/unitary
 ###Working on:
 
-- Draw the quantum circuit resulting from the decomposition of the clifford/unitary
+
 - Shadow the stabiliser state with the exact density matrix representing the state (the **"base representation"**)
 - Output the "ket" state represented by the  (Aaronson/Gottesman arXiv:quant-ph/0406196) tabelau (the **"tableau"**)
 - Integrate earlier work pre-defining the steane code generators and logical operators, allowing an arbitrary qubit to be projected into a steane code stabilised state.
@@ -25,10 +25,15 @@
 This has been developed on Julia 3.0. Currently there are two files that need to be loaded.
 
 Move to the directory containing these files 
+
     cd("juqst")
+
 Then 
+
     require("Initial.jl")
+
 and 
+
     require("Symplectic.jl")
 
 
@@ -69,6 +74,7 @@ The following commands are defined
     cnot(state,control,target) # apply a controlled not from control qubit to target qubit
 
 Output of the resultant state can be supressed by adding an extra false parameter
+
     hadamard(state,qubit,false) # hadamard as before, but supress output
 
 **NOTE! that these commands alter the state passed into them. I have broken Julia convention which requires functions 
@@ -78,7 +84,7 @@ with side effects to be written thus - hadamard!(state,qubit).**
 
 (Koenig/Smolin arXiv:quant-ph/1406.2170)
 
-The basis behind this papers is that we can implement a one-to-one mapping between the cliffords and an integer (plus a random phase string).
+The idea behind this paper is that we can implement a one-to-one mapping between the cliffords and an integer (plus a random phase string).
 
 The mapping is as follows:
 
@@ -113,7 +119,35 @@ This prints out the elementary gates that would reconstruct the relevant cliffor
 The commands are stored as string in the vector commands
 The commands are also stored as Julia code in the vector executeCommands (so you can for instance execute them to re-create the tableau)
 
-Shortly I will add instructions as to how to draw the circuit represented by these gates.
+# Draw the circuit
+
+This is a bit more involved, just now I am using IJulia to provide the rich notebook needed to see the circuit.
+
+To install IJulia, full instructions can be found here: https://github.com/JuliaLang/IJulia.jl but the summary is this
+
+- You need to have installed ipython, simplest way to do this is install pip if you haven't already and then
+
+     sudo pip install ipython[all]
+
+You might also want to install scipy and numpy whilst you are at it, I am going to use them sometime (fer sure)
+
+- Then from within julia 
+
+    Pkg.add("IJulia")
+
+  If there are any errors fix it and Pkg.build("IJulia") until it builds (it will!)
+
+````
+  using IJulia
+  notebook()
+````
+gets it up and running.
+
+You will also need from within Julia to add the ImageView package Pkg.add("ImageView")
+
+Here is a sample IJulia session showing how to use the new drawcircuit functionality.
+
+[IJulia example notebook](./Example of Draw Circuit.html)
 
     getState(state) 
 
