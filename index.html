@@ -1,83 +1,230 @@
 <!DOCTYPE html>
 <html>
+
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <meta name="description" content="Juqst : JUlia Quantum Simulator Toolbox">
 
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>Juqst by rharper2</title>
+    <title>Juqst</title>
   </head>
 
   <body>
-    <header>
-      <div class="inner">
-        <h1>Juqst</h1>
-        <h2>JUlia Quantum Simulator Toolbox</h2>
-        <a href="https://github.com/rharper2/Juqst" class="button"><small>View project on</small>GitHub</a>
-      </div>
-    </header>
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/rharper2/Juqst">View on GitHub</a>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+          <h1 id="project_title">Juqst</h1>
+          <h2 id="project_tagline">JUlia Quantum Simulator Toolbox</h2>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
-
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
-
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-        </section>
-
-        <aside id="sidebar">
-          <a href="https://github.com/rharper2/Juqst/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/rharper2/Juqst/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
-
-          <p class="repo-owner"><a href="https://github.com/rharper2/Juqst"></a> is maintained by <a href="https://github.com/rharper2">rharper2</a>.</p>
-
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/rharper2/Juqst/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/rharper2/Juqst/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
     </div>
 
-  
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="juqst-julia-quantum-simulator-toolbox" class="anchor" href="#juqst-julia-quantum-simulator-toolbox"><span class="octicon octicon-link"></span></a>Juqst: JUlia Quantum Simulator Toolbox</h1>
+
+<h2>
+<a name="beginning-of-a-quantum-simulator-toolbox-primarily-written-in-the-julia-language" class="anchor" href="#beginning-of-a-quantum-simulator-toolbox-primarily-written-in-the-julia-language"><span class="octicon octicon-link"></span></a>Beginning of a quantum simulator toolbox, primarily written in the Julia Language</h2>
+
+<h3>
+<a name="done" class="anchor" href="#done"><span class="octicon octicon-link"></span></a>Done:</h3>
+
+<ul>
+<li>Implement the simulation of Stabiliser Circuits (Aaronson/Gottesman arXiv:quant-ph/0406196)</li>
+<li>Implement ability to select an arbitrary Clifford group element (Koenig/Smolin arXiv:quant-ph/1406.2170) (not quite complete - phases not implemented properly yet)</li>
+<li>Implement the ability to decompose an arbitrary clifford unitary into a quantum circuit consistiting of hadamard, phase and two-qubit cnot gates.(Aaronson/Gottesman arXiv:quant-ph/0406196)</li>
+<li>
+<p>Draw the quantum circuit resulting from the decomposition of the clifford/unitary</p>
+
+<h3>
+<a name="working-on" class="anchor" href="#working-on"><span class="octicon octicon-link"></span></a>Working on:</h3>
+</li>
+<li><p>Shadow the stabiliser state with the exact density matrix representing the state (the <strong>"base representation"</strong>)</p></li>
+<li>Output the "ket" state represented by the  (Aaronson/Gottesman arXiv:quant-ph/0406196) tabelau (the <strong>"tableau"</strong>)</li>
+<li>Integrate earlier work pre-defining the steane code generators and logical operators, allowing an arbitrary qubit to be projected into a steane code stabilised state.</li>
+</ul><h3>
+<a name="to-do" class="anchor" href="#to-do"><span class="octicon octicon-link"></span></a>To do:</h3>
+
+<ul>
+<li>randomised benchmarking from arbitrary cliffords</li>
+<li>introduce the ability to add noise at the level of the "base representation" as well as in the stabilised state</li>
+<li>explore noisy quantum channels</li>
+<li>integrate tomography work</li>
+</ul><h1>
+<a name="to-install" class="anchor" href="#to-install"><span class="octicon octicon-link"></span></a>To install</h1>
+
+<p>This has been developed on Julia 3.0. Currently there are two files that need to be loaded.</p>
+
+<p>Move to the directory containing these files </p>
+
+<pre><code>cd("juqst")
+</code></pre>
+
+<p>Then </p>
+
+<pre><code>require("Initial.jl")
+</code></pre>
+
+<p>and </p>
+
+<pre><code>require("Symplectic.jl")
+</code></pre>
+
+<h1>
+<a name="sample-use" class="anchor" href="#sample-use"><span class="octicon octicon-link"></span></a>Sample use</h1>
+
+<h2>
+<a name="stabiliser-circuits" class="anchor" href="#stabiliser-circuits"><span class="octicon octicon-link"></span></a>Stabiliser Circuits</h2>
+
+<pre><code>state = setup(number_ofQubits)
+</code></pre>
+
+<p>prepares the stabiliser state for the correct number of qubits in the |000..000&gt; basis state</p>
+
+<p>The state is represented internally as a matrix of the form:</p>
+
+<p></p>
+
+<p>Currently I am just using Int32 Arrays, although binary arrays would save space (if it ever becomes necessary).</p>
+
+<pre><code>output(state)
+</code></pre>
+
+<p>Prints the state in a human readable form. The states above the line are the 'destabiliser' state, below the line are the 'stabiliser' states. </p>
+
+<p>So in a 3 qubit system the initial state of |000&gt; is coded as </p>
+
+<pre><code>XII
+IXI
+IIX
+---
+ZII
+IZI
+IIZ
+</code></pre>
+
+<p>The following commands are defined</p>
+
+<pre><code>hadamard(state,qubit)  # apply a hadamard to the relevant qubit
+phase(state,qubit)     # apply a phase gate to the relevant qubit
+cnot(state,control,target) # apply a controlled not from control qubit to target qubit
+</code></pre>
+
+<p>Output of the resultant state can be supressed by adding an extra false parameter</p>
+
+<pre><code>hadamard(state,qubit,false) # hadamard as before, but supress output
+</code></pre>
+
+<p><strong>NOTE! that these commands alter the state passed into them. I have broken Julia convention which requires functions 
+with side effects to be written thus - hadamard!(state,qubit).</strong></p>
+
+<h2>
+<a name="arbitrary-cliffords" class="anchor" href="#arbitrary-cliffords"><span class="octicon octicon-link"></span></a>Arbitrary cliffords</h2>
+
+<p>(Koenig/Smolin arXiv:quant-ph/1406.2170)</p>
+
+<p>The idea behind this paper is that we can implement a one-to-one mapping between the cliffords and an integer (plus a random phase string).</p>
+
+<p>The mapping is as follows:</p>
+
+<p><img src="Clifford%20Mapping.png">Koenig/Smolin arXiv:quant-ph/1406.2170</p>
+
+<p>We can generate the alpha,beta,gamma and delta via</p>
+
+<p>symplectic(i,n) # i = integer represting the clifford, n is the number of qubits</p>
+
+<p>Which returns the nxn arrays (alpha-&gt;delta) coded as follows:</p>
+
+<p><img src="coding.png">Koenig/Smolin arXiv:quant-ph/1406.2170</p>
+
+<p>More usefully these can be placed into a stabiliser tableau (that is the equivlent of passing the state |0000&gt; through a gate that implements the unitary in question as follows:</p>
+
+<pre><code>stabiliseSymp(symp) # where symp is the symplectic of the clifford generated.
+</code></pre>
+
+<p>e.g.</p>
+
+<pre><code>state = stabiliseSymp(symplectic(23,4)) # for the tableau of clifford '23' in a 4 qubit system
+</code></pre>
+
+<p>Of course there are actually 4^n versions of of symplectic 23 (here n = 4), because of the different phases that we can have - this will be implemented shortly.</p>
+
+<h1>
+<a name="decomposing-a-tableau-such-as-clifford" class="anchor" href="#decomposing-a-tableau-such-as-clifford"><span class="octicon octicon-link"></span></a>Decomposing a tableau (such as clifford)</h1>
+
+<p>This will be made more general, but just now it decomposes an arbitrary clifford</p>
+
+<pre><code>decompose(clifford_number, qubits)
+</code></pre>
+
+<p>This prints out the elementary gates that would reconstruct the relevant clifford unitary.</p>
+
+<p>The commands are stored as string in the vector commands
+The commands are also stored as Julia code in the vector executeCommands (so you can for instance execute them to re-create the tableau)</p>
+
+<h1>
+<a name="draw-the-circuit" class="anchor" href="#draw-the-circuit"><span class="octicon octicon-link"></span></a>Draw the circuit</h1>
+
+<p>This is a bit more involved, just now I am using IJulia to provide the rich notebook needed to see the circuit.</p>
+
+<p>To install IJulia, full instructions can be found here: <a href="https://github.com/JuliaLang/IJulia.jl">https://github.com/JuliaLang/IJulia.jl</a> but the summary is this</p>
+
+<ul>
+<li>
+<p>You need to have installed ipython, simplest way to do this is install pip if you haven't already and then</p>
+
+<p>sudo pip install ipython[all]</p>
+</li>
+</ul><p>You might also want to install scipy and numpy whilst you are at it, I am going to use them sometime (fer sure)</p>
+
+<ul>
+<li>
+<p>Then from within julia </p>
+
+<p>Pkg.add("IJulia")</p>
+
+<p>If there are any errors fix it and Pkg.build("IJulia") until it builds (it will!)</p>
+</li>
+</ul><pre><code>  using IJulia
+  notebook()
+</code></pre>
+
+<p>gets it up and running.</p>
+
+<p>You will also need from within Julia to add the ImageView package Pkg.add("ImageView")</p>
+
+<p>Here is a sample IJulia session showing how to use the new drawcircuit functionality.</p>
+
+<p>HTML -&gt; download and open with browser (clicking just gives source just now) <a href="./Example%20of%20Draw%20Circuit.html">IJulia example notebook</a>
+PDF -&gt; should render fine in browser <a href="./Notebook.pdf">IJulia pdf of example notebook</a></p>
+
+<pre><code>getState(state) 
+</code></pre>
+
+<p>Is a simple funciton that returns the state the tableau is in vis-a-vis the Aarosnon/Gottesman decomposition algorithm.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Juqst maintained by <a href="https://github.com/rharper2">rharper2</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
   </body>
 </html>
