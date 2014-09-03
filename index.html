@@ -32,7 +32,7 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         <h1>
-<a name="juqst-julia-quantum-simulator-toolbox" class="anchor" href="#juqst-julia-quantum-simulator-toolbox"><span class="octicon octicon-link"></span></a>Juqst: JUlia Quantum Simulator Toolbox</h1>
+<a name="juqst-julia-quantum-simulator-toolbox" class="anchor" href="#juqst-julia-quantum-simulator-toolbox"><span class="octicon octicon-link"></span></a><p>Juqst:</p><p style="padding-left:10px">JUlia Quantum Simulator Toolbox</p></h1>
 
 <h2>
 <a name="beginning-of-a-quantum-simulator-toolbox-primarily-written-in-the-julia-language" class="anchor" href="#beginning-of-a-quantum-simulator-toolbox-primarily-written-in-the-julia-language"><span class="octicon octicon-link"></span></a>Beginning of a quantum simulator toolbox, primarily written in the Julia Language</h2>
@@ -42,7 +42,7 @@
 
 <ul>
 <li>Implement the simulation of Stabiliser Circuits <a href="http://arxiv.org/pdf/quant-ph/0406196v5.pdf">(Aaronson/Gottesman arXiv:quant-ph/0406196)</a></li>
-<li>Implement ability to select an arbitrary Clifford group element <a href="http://arxiv.org/abs/1406.2170">(Koenig/Smolin arXiv:quant-ph/1406.2170) (not quite complete - phases not implemented properly yet)</a></li>
+<li>Implement ability to select an arbitrary Clifford group element <a href="http://arxiv.org/abs/1406.2170">(Koenig/Smolin arXiv:quant-ph/1406.2170)</a> (not quite complete - phases not implemented properly yet)</li>
 <li>Implement the ability to decompose an arbitrary clifford unitary into a quantum circuit consistiting of hadamard, phase and two-qubit cnot gates.(Aaronson/Gottesman arXiv:quant-ph/0406196)</li>
 <li> Draw the quantum circuit resulting from the decomposition of the clifford/unitary</li>
 
@@ -93,7 +93,7 @@
 
 <p>The state is represented internally as a matrix of the form:</p>
 
-<p><img src="matrix.png">Aaronson/Gottesman arXiv:quant-ph/0406196</p>
+<p><img src="Matrix.png">Aaronson/Gottesman arXiv:quant-ph/0406196</p>
 
 <p>Currently I am just using Int32 Arrays, although binary arrays would save space (if it ever becomes necessary).</p>
 
@@ -193,7 +193,7 @@ The commands are also stored as Julia code in the vector executeCommands (so you
 
 <p>Pkg.add("IJulia")</p>
 
-<p>If there are any errors fix it and Pkg.build("IJulia") until it builds (it will!)</p>
+<p>If there are any errors fix it (for me it didn't work initially because I had packages from an old version. I removed all my existing packages - identify with Pkg.status() - then Pkg.rm("whatever") - then updated Pkg.update(), then tried again with Pkg.add("IJulia"). This was probably overkill and a Pkg.update() and Pkg.build("IJulia") could work.)</p>
 </li>
 </ul><pre><code>  using IJulia
   notebook()
