@@ -3,8 +3,8 @@
 
 ###Done:
 
-* Implement the simulation of Stabiliser Circuits (Aaronson/Gottesman arXiv:quant-ph/0406196)
-* Implement ability to select an arbitrary Clifford group element (Koenig/Smolin arXiv:quant-ph/1406.2170) (not quite complete - phases not implemented properly yet)
+* Implement the simulation of Stabiliser Circuits [Aaronson/Gottesman arXiv:quant-ph/0406196](http://arxiv.org/pdf/quant-ph/0406196)
+* Implement ability to select an arbitrary Clifford group element [Koenig/Smolin arXiv:quant-ph/1406.2170](http://arxiv.org/abs/1406.2170) (not quite complete - phases not implemented properly yet)
 * Implement the ability to decompose an arbitrary clifford unitary into a quantum circuit consistiting of hadamard, phase and two-qubit cnot gates.(Aaronson/Gottesman arXiv:quant-ph/0406196)
 * Draw the quantum circuit resulting from the decomposition of the clifford/unitary
 ###Working on:
@@ -47,7 +47,7 @@ prepares the stabiliser state for the correct number of qubits in the |000..000>
 
 The state is represented internally as a matrix of the form:
 
-<img src="matrix.png">Koenig/Smolin arXiv:quant-ph/1406.2170</img>
+<img src="Matrix.png"></img>
 Aaronson/Gottesman arXiv:quant-ph/0406196
 
 Currently I am just using Int32 Arrays, although binary arrays would save space (if it ever becomes necessary).
