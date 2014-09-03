@@ -41,16 +41,15 @@
 <a name="done" class="anchor" href="#done"><span class="octicon octicon-link"></span></a>Done:</h3>
 
 <ul>
-<li>Implement the simulation of Stabiliser Circuits (Aaronson/Gottesman arXiv:quant-ph/0406196)</li>
-<li>Implement ability to select an arbitrary Clifford group element (Koenig/Smolin arXiv:quant-ph/1406.2170) (not quite complete - phases not implemented properly yet)</li>
+<li>Implement the simulation of Stabiliser Circuits <a href="http://arxiv.org/pdf/quant-ph/0406196v5.pdf">(Aaronson/Gottesman arXiv:quant-ph/0406196)</a></li>
+<li>Implement ability to select an arbitrary Clifford group element <a href="http://arxiv.org/abs/1406.2170">(Koenig/Smolin arXiv:quant-ph/1406.2170) (not quite complete - phases not implemented properly yet)</a></li>
 <li>Implement the ability to decompose an arbitrary clifford unitary into a quantum circuit consistiting of hadamard, phase and two-qubit cnot gates.(Aaronson/Gottesman arXiv:quant-ph/0406196)</li>
-<li>
-<p>Draw the quantum circuit resulting from the decomposition of the clifford/unitary</p>
+<li> Draw the quantum circuit resulting from the decomposition of the clifford/unitary</li>
 
 <h3>
 <a name="working-on" class="anchor" href="#working-on"><span class="octicon octicon-link"></span></a>Working on:</h3>
 </li>
-<li><p>Shadow the stabiliser state with the exact density matrix representing the state (the <strong>"base representation"</strong>)</p></li>
+<li>Shadow the stabiliser state with the exact density matrix representing the state (the <strong>"base representation"</strong>)</li>
 <li>Output the "ket" state represented by the  (Aaronson/Gottesman arXiv:quant-ph/0406196) tabelau (the <strong>"tableau"</strong>)</li>
 <li>Integrate earlier work pre-defining the steane code generators and logical operators, allowing an arbitrary qubit to be projected into a steane code stabilised state.</li>
 </ul><h3>
@@ -94,7 +93,7 @@
 
 <p>The state is represented internally as a matrix of the form:</p>
 
-<p></p>
+<p><img src="matrix.png">Aaronson/Gottesman arXiv:quant-ph/0406196</p>
 
 <p>Currently I am just using Int32 Arrays, although binary arrays would save space (if it ever becomes necessary).</p>
 
