@@ -47,10 +47,13 @@ prepares the stabiliser state for the correct number of qubits in the |000..000>
 
 The state is represented internally as a matrix of the form:
 
-<TO BE INSERTED>
+<img src="matrix.png">Koenig/Smolin arXiv:quant-ph/1406.2170</img>
+Aaronson/Gottesman arXiv:quant-ph/0406196
 
 Currently I am just using Int32 Arrays, although binary arrays would save space (if it ever becomes necessary).
-
+Rows 1 to n of the tableau represent the destabiliser generators, rows n+1 to 2n represent the stabiliser generators. Each row is read
+as follows: if the x<sub>ij</sub> and z<sub>ij</sub> are 1, the de/stabiliser is a Y, if they are both 0, its I otherwise its an X or Z depending on which one is set.
+ 
     output(state)
 
 Prints the state in a human readable form. The states above the line are the 'destabiliser' state, below the line are the 'stabiliser' states. 
@@ -147,8 +150,7 @@ You will also need from within Julia to add the ImageView package Pkg.add("Image
 
 Here is a sample IJulia session showing how to use the new drawcircuit functionality.
 
-HTML -> download and open with browser (clicking just gives source just now) [IJulia example notebook](./Example of Draw Circuit.html)
-PDF -> should render fine in browser [IJulia pdf of example notebook](./Notebook.pdf)
+[IJulia example notebook](http://rharper2.github.io/Juqst/Example%20of%20Draw%20Circuit.html)
 
     getState(state) 
 
