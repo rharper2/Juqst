@@ -615,6 +615,86 @@ function nextStep(ss1)
 	return 
 end
 
+# maxGates is the number of gates we are allowed (an integer offset to an array)
+# gates is the "stack" <- an array of gates we are applying.
+# increment index 1, if its greater then maxGate, increment the one above it.
+function incrementGate!(gates,maxGate,offset=1)
+	if (size(gates,1) < offset ) 
+		push!(gates,1)
+		return
+	end
+	currentValue = gates[offset]
+	currentValue = currentValue +1
+	if (currentValue > maxGate)
+		gates[offset]=1
+		incrementGate!(gates,maxGate,offset+1)
+	else 
+		gates[offset]=currentValue
+	end
+end
+
+
+function bruteForceBreadthFirst(clifford)
+	global svec
+	n=div(size(clifford,1),2) # half the dimension of this 2n x (2n+1) matrix
+	gates = (Expr)[]
+	svec = []
+	# If we have a n quibit system then there are a total of 
+	# n*(n+1) possible cnots, n phase gates and n hadamards we can apply
+	for i = 1:n
+	  for j = 1:n
+	  	if i!=j
+	  		push!(gates,Expr(:call,:cnot,:svec,i,j,false))
+	  	end
+	  end
+	  push!(gates,Expr(:call,:hadamard,:svec,i,false))
+	  push!(gates,Expr(:call,:phase,:svec,i,false))
+	end
+	# so we now have an array of all possible gates we can apply to the system
+	# we want to search through the gates, we "should" need at most n^2 of them.
+	# The process will be to have a stack of gates to apply, check them out
+	# if we match getState(11) i.e. they reverted the clifford to the initial state
+	# we have found the gates needed
+	# otherwise we increment our "bottom" gate, and if we have gone though them, recursively increment the 
+	# gate above it (incrementGate! does this for us)
+	state = 0
+	maxGates = size(gates,1);
+	gatesToApply=(Int32)[]
+	if getState(clifford) == 11
+		println("Very funny you don't need to do anything")
+		return
+	end
+	currentAt = 1
+	while (state!=11 && size(gate,1) < n*n)
+		svec = copy(clifford)
+		incrementGate!(gatesToApply,maxGates)
+		if (size(gatesToApply,1) > currentAt)
+			print("Trying: ")
+				for i=1:size(gatesToApply,1)
+				print(gatesToApply[i]," ")
+			end
+			println("")
+			currentAt+=1
+		end
+		for index=1:size(gatesToApply,1)
+			#println("Going to apply ",gates[gatesToApply[index]])
+			eval(gates[gatesToApply[index]])
+		end
+		state = getState(svec)
+	end
+
+	if (state == 11)
+		println("Found it")
+		println("Gates applied")
+		for i = 1:size(gatesToApply,1)
+			println(gates[gatesToApply[index]])
+		end
+	else
+		println("Didn't find it!")
+	end
+end
+
+
 
 	
 
