@@ -20,7 +20,7 @@ foreach i ($*)
 	    echo "error in qasm2tex on $t.tex! aborting."
 	else
 	    /usr/texbin/latex $t
-	    /usr/texbin/dvips -D2400 -E -o $t.eps $t
+	    /usr/texbin/dvips -D2400 -E -o $t.eps $t >& /dev/null 
 	    ${GS} -sOutputFile=$t.pbm $t.eps -c quit
 	    pnmcrop $t.pbm | pnmtopng >! $t.png
 	    rm -f $t.pbm

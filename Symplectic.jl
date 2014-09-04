@@ -557,6 +557,8 @@ end
 
 function drawCircuit()
 	global commands
+	currentDir = pwd()
+	try
 	cOut = open("qasm/temp.qasm","w")
 	for i = 1:size(commands,1)
 		m = match(r"setup\((.*)\)",commands[i])
@@ -586,7 +588,9 @@ function drawCircuit()
     cd("qasm")
 	test = `csh qasm2png temp.qasm`
 	temp = readall(test) 
-	cd("..")
+	finally
+	  cd(currentDir)
+	end
 	img = imread("qasm/temp.png")
 end
 
