@@ -527,7 +527,7 @@ end
 # the gates are contained in text in the vector of strings, "commands"
 # and as Expressions (and thus executable in Julia) in executeCommands
 
-function decompose(i,j=4,supressOutput = false)
+function decompose(i,j=4,supressOutput = false,rationalise=true)
 	global commands
 	global executeCommands
 	commands=["output(svec)"]
@@ -542,11 +542,16 @@ function decompose(i,j=4,supressOutput = false)
 	end
 	addCommand("setup($j)",Expr(:call,:setup,i))
 	reverse!(commands)
+	if rationalise==true
+		removeRedundancy(j)
+	end
+
 	if (!supressOutput) 
 		for i = 1:size(commands,1) 
 			println(commands[i]) 
 		end
 	end
+
 end
 
 
@@ -636,7 +641,12 @@ end
 
 function bruteForceBreadthFirst(clifford)
 	global svec
+	count = 0
 	n=div(size(clifford,1),2) # half the dimension of this 2n x (2n+1) matrix
+	if (n > 4) 
+		println("This might take some time!, there are ",n*(n+1) + n + n, " different gates , we might need ", n*n/log(n), " of them so I *might* have to check ", n*n/log(n)^(n*(n+1) + n + n), "combos !")
+		println("Ctrl-C could be your friend")
+	end
 	gates = (Expr)[]
 	svec = []
 	# If we have a n quibit system then there are a total of 
@@ -665,9 +675,10 @@ function bruteForceBreadthFirst(clifford)
 		return
 	end
 	currentAt = 1
-	while (state!=11 && size(gate,1) < n*n)
+	while (state!=11 && size(gatesToApply,1) < n*n)
 		svec = copy(clifford)
 		incrementGate!(gatesToApply,maxGates)
+		count += 1
 		if (size(gatesToApply,1) > currentAt)
 			print("Trying: ")
 				for i=1:size(gatesToApply,1)
@@ -684,19 +695,109 @@ function bruteForceBreadthFirst(clifford)
 	end
 
 	if (state == 11)
-		println("Found it")
+		println("Found it after (only) $count permuations")
 		println("Gates applied")
+		reverse!(gatesToApply)
 		for i = 1:size(gatesToApply,1)
-			println(gates[gatesToApply[index]])
+			println(gates[gatesToApply[i]])
 		end
 	else
 		println("Didn't find it!")
 	end
 end
 
+#coding for current bits
+# 1 = phase, 2 = hadamard
+# 2 + x  = cnot control (with target at x)
+# 2 + n + x = cnot target (with control at x)
+
+function checkGate(index,currentBits,n)
+	global commands
+	global executeCommands
+	global toDelete
+	checking = commands[index]
+	m = match(r"setup\((.*)\)",checking)
+	if (m!=nothing)
+    	return
+    end
+    m=match(r"hadamard\((.*)\)",checking)
+    if (m!=nothing)
+    	bit = int(m.captures[1])
+    	if size(currentBits[bit],1) > 0
+    		if currentBits[bit][end][1] == 2
+    			# two hadamards make a nothing
+    			(been,gone) = pop!(currentBits[bit])
+    			push!(toDelete,gone)
+    			push!(toDelete,index)
+			else
+				push!(currentBits[bit],(2,index))
+			end
+		else
+				push!(currentBits[bit],(2,index))
+		end
+		return
+	end
+	m=match(r"phase\((.*)\)",checking)
+    if (m!=nothing) # Its a phase, we need 4 of these
+    	bit = int(m.captures[1])
+    	if size(currentBits[bit],1) > 2
+    		if currentBits[bit][end][1] == 1 && currentBits[bit][end-1][1] == 1 && currentBits[bit][end-2][1] == 1
+    			# four phases make a nothing.
+    			(b,g) = pop!(currentBits[bit])
+    			push!(toDelete,g)
+    			(b,g) = pop!(currentBits[bit])
+    			push!(toDelete,g)
+    			(b,g) = pop!(currentBits[bit])
+    			push!(toDelete,g)
+    			push!(toDelete,index)
+			else
+				push!(currentBits[bit],(1,index))
+			end
+		else
+				push!(currentBits[bit],(1,index))
+		end
+		return
+	end
+	m=match(r"cnot\((.*),(.*)\)",checking)
+    if (m!=nothing)
+    		cbit = int(m.captures[1])
+    		tbit = int(m.captures[2])
+    		# so just now we are going to catch two cnots in a row
+    		# needs to match both bits.
+    		cbitNo = 2+tbit
+    		tbitNo = 2+n+cbit
+    		if (size(currentBits[cbit],1) > 0 && size(currentBits[tbit],1) > 0 && currentBits[cbit][end][1] == cbitNo &&
+    			currentBits[tbit][end][1] == tbitNo)
+    			(b,g)=pop!(currentBits[cbit])
+    			push!(toDelete,g)
+    			(b,g)=pop!(currentBits[tbit])
+    			# dont need to push the deletion of this gate twice.
+    			push!(toDelete,index)
+    		else
+    			push!(currentBits[cbit],(cbitNo,index))
+    			push!(currentBits[tbit],(tbitNo,index))
+    		end
+    end
+end
 
 
-	
+function removeRedundancy(n)
+	global commands
+	global executeCommands
+	global toDelete
+	toDelete = (Int32)[]
+	bitsOf = (Array{(Int32,Int32)})[]
+	for i=1:n
+    	push!(bitsOf,[])
+	end
+	for i=1:size(commands,1)
+		checkGate(i,bitsOf,n)
+	end
+	deleteat!(commands,sort!(toDelete))
+	deleteat!(executeCommands,toDelete)
+end
+
+
 
 
 
