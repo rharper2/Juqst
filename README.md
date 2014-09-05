@@ -8,7 +8,7 @@
 * Implement the ability to decompose an arbitrary clifford unitary into a quantum circuit consistiting of hadamard, phase and two-qubit cnot gates.(Aaronson/Gottesman arXiv:quant-ph/0406196)
 * Draw the quantum circuit resulting from the decomposition of the clifford/unitary
 * Implement basic steps to rationalise the decomposed circuit
-* Simple brute force method to determine smallest circuit possible (probably only for 3qubits or less, or people with a serious amount of spare time)
+* Simple brute force method to determine smallest circuit possible (runs in approximately (n*n)^(n*n) time - probably only for 3 qubits or less, or people with a serious amount of spare time)
 
 ###Working on:
 
@@ -22,6 +22,7 @@
 - introduce the ability to add noise at the level of the "base representation" as well as in the stabilised state
 - explore noisy quantum channels
 - integrate tomography work
+- optimise the clifford compiler in sub-exponential time
 
 # To install
 

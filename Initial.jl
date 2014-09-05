@@ -291,5 +291,119 @@ function measure(state,a)
    end
 end
 
+function rowswap!(alteredState,i,k)
+      println("rowswap called with i $i and k $k")
+      temp = alteredState[i,:]
+      alteredState[i,:]=alteredState[k,:]
+      alteredState[k,:]=temp
+end
+
+function cliffordPhase(state,i,k)
+  # Returns the phase (0,2,3,4) when row i is left multiplied by row k
+  e=0
+   n=div(size(state)[1],2)
+ 
+  for j=1:n
+    if state[k,j] == 1 && state[k,j+n]==0 # its an X
+      if state[i,j] == 1 && state[i,j+n] == 1 # its a Y
+        e+=1 # XY=iZ
+      elseif   state[i,j] == 0 && state[i,j+n] == 1 # its a Z
+        e+=-1 # XY=-iZ
+      end
+    elseif state[k,j] == 1 && state[k,j+n]==1 # its a Y
+      if state[i,j] == 1 && state[i,j+n] == 1       # its a Z
+        e+=1 # YZ=iXZ
+      elseif state[i,j] == 1 && state[i,j+n] == 0 # its a X
+        e+=-1 # YX=-iZ
+      end
+    elseif state[k,j] == 0 && state[k,j+n]==1 # its a Z
+      if state[i,j] == 1 && state[i,j+n] == 0       # its a X
+        e+=1 # ZX=iY
+      elseif state[i,j] == 1 && state[i,j+n] == 1 # its a Y
+        e+=-1 # ZY=-iX
+      end
+    end
+  end
+  e = e%4
+  if (e < 0) e+=4
+  end
+  return e
+end 
+
+
+
+function rowmult!(alteredState,i,k)
+  #left multiply row i by row k
+  n=div(size(alteredState)[1],2)
+  alteredState[i,2*n+1] = cliffordPhase(alteredState,i,k)
+  for j=1:2*n
+    alteredState[i,j] = alteredState[i,j] ^ alteredState[k,j]
+  end
+end
+
+
+#returns a tableau and a size where gaussian elimination has
+#been carried out on the supplied state, in order to
+#provide a minimal set of generators containing X's and Y's in 
+#upper triangular form 
+
+function gaussianElimination(state)
+  alteredState = copy(state)
+  n=div(size(alteredState)[1],2)
+  i = n+1 # first row of commuting generators
+  print("is is $i")
+  k=0
+  k2=0
+  j=0
+  for j=1:n
+    for k=n+1:2*n
+      # Find a generator containing X in the jth column
+      if alteredState[k,j] == 1
+        break
+      end
+    end
+    if k<2*n
+      #swap row with the row pointed to by i
+      rowswap!(alteredState,i,k)
+      rowswap!(alteredState,i-n,k-n) # swap the non-commutators as well
+      # then use the row to eliminate X from that bit in the rest of the tableau
+      for k2=i+1:2*n
+        println("i is $i K2 $k2 and j $j");
+        println("alteredState is ",size(alteredState))
+        if alteredState[k2,j] == 1
+          rowmult!(alteredState,k2,i)
+          rowmult!(alteredState,i-n,k2-n)
+        end
+      end
+      println("Adding one to i $i")
+      i+=1
+    end
+    
+  end
+  gen = i - n
+  # The first gen generators are X/Ys and in quasi upper triangular form.
+  for j=1:n
+    for k=i:2*n
+      if alteredState[k,n+j] == 1 # we have found a Z in the jth bit
+        break
+      end
+    end
+    if k < 2* n
+      rowswap!(alteredState,i,k)
+      rowswap!(alteredState,i-n,k-n)
+      for k2=i+1:2*n
+        if (alteredState[k2,j+n] ==1 ) # z in this "bit"
+          rowmult!(alteredState,k2,i)
+          rowmult!(alteredState,i-n,k2-n)
+        end
+      end
+      i+=1
+    end
+    
+  end
+  return (alteredState,gen)
+end
+
+
 
 
