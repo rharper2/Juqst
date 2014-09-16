@@ -298,28 +298,28 @@ function rowswap!(alteredState,i,k)
       alteredState[k,:]=temp
 end
 
-function cliffordPhase(state,i,k)
+function cliffordPhase(i,k)
   # Returns the phase (0,2,3,4) when row i is left multiplied by row k
+  
   e=0
-   n=div(size(state)[1],2)
- 
+  n=div(size(i)[2],2)
   for j=1:n
-    if state[k,j] == 1 && state[k,j+n]==0 # its an X
-      if state[i,j] == 1 && state[i,j+n] == 1 # its a Y
+    if k[j] == 1 && k[j+n]==0 # its an X
+      if i[j] == 1 && i[j+n] == 1 # its a Y
         e+=1 # XY=iZ
-      elseif   state[i,j] == 0 && state[i,j+n] == 1 # its a Z
+      elseif   i[j] == 0 && i[j+n] == 1 # its a Z
         e+=-1 # XY=-iZ
       end
-    elseif state[k,j] == 1 && state[k,j+n]==1 # its a Y
-      if state[i,j] == 1 && state[i,j+n] == 1       # its a Z
+    elseif  k[j] == 1 && k[j+n]==1 # its a Y
+      if i[j] == 1 && i[j+n] == 1       # its a Z
         e+=1 # YZ=iXZ
-      elseif state[i,j] == 1 && state[i,j+n] == 0 # its a X
+      elseif i[j] == 1 && i[j+n] == 0 # its a X
         e+=-1 # YX=-iZ
       end
-    elseif state[k,j] == 0 && state[k,j+n]==1 # its a Z
-      if state[i,j] == 1 && state[i,j+n] == 0       # its a X
+    elseif  k[j] == 0 && k[j+n]==1 # its a Z
+      if i[j] == 1 && i[j+n] == 0       # its a X
         e+=1 # ZX=iY
-      elseif state[i,j] == 1 && state[i,j+n] == 1 # its a Y
+      elseif i[j] == 1 && i[j+n] == 1 # its a Y
         e+=-1 # ZY=-iX
       end
     end
@@ -332,15 +332,19 @@ end
 
 
 
-function rowmult!(alteredState,i,k)
+function rowmult!(alteredState,i,k) # does the multiplication in place in a state array.
   #left multiply row i by row k
   n=div(size(alteredState)[1],2)
-  alteredState[i,2*n+1] = cliffordPhase(alteredState,i,k)
-  for j=1:2*n
-    alteredState[i,j] = alteredState[i,j] ^ alteredState[k,j]
-  end
+  alteredState[i,2*n+1] = cliffordPhase(alteredState[i,:],alteredState[k,:])
+  alteredState[i,:] = alteredState[i,:] $ alteredState[k,:] # $ is Julia's bitwise xor.
 end
 
+function rowmult(i,k) # supply to vectors and get the multiplied vector out.
+  n=div(size(i)[2],2)
+  tempState = (i $ k) # $ is Julia's bitwise xor.
+  tempState[2*n+1] = cliffordPhase(i,k)
+  return tempState
+ end
 
 #returns a tableau and a size where gaussian elimination has
 #been carried out on the supplied state, in order to
@@ -351,31 +355,32 @@ function gaussianElimination(state)
   alteredState = copy(state)
   n=div(size(alteredState)[1],2)
   i = n+1 # first row of commuting generators
-  print("is is $i")
   k=0
   k2=0
   j=0
   for j=1:n
+    found = 0;
+  
     for k=n+1:2*n
       # Find a generator containing X in the jth column
       if alteredState[k,j] == 1
+        found = 1
         break
       end
     end
-    if k<2*n
+    if found  == 1
       #swap row with the row pointed to by i
-      rowswap!(alteredState,i,k)
-      rowswap!(alteredState,i-n,k-n) # swap the non-commutators as well
+      if (i!=k) 
+        rowswap!(alteredState,i,k)
+        rowswap!(alteredState,i-n,k-n) # swap the non-commutators as well
+      end
       # then use the row to eliminate X from that bit in the rest of the tableau
       for k2=i+1:2*n
-        println("i is $i K2 $k2 and j $j");
-        println("alteredState is ",size(alteredState))
         if alteredState[k2,j] == 1
           rowmult!(alteredState,k2,i)
           rowmult!(alteredState,i-n,k2-n)
         end
       end
-      println("Adding one to i $i")
       i+=1
     end
     
@@ -389,8 +394,10 @@ function gaussianElimination(state)
       end
     end
     if k < 2* n
-      rowswap!(alteredState,i,k)
-      rowswap!(alteredState,i-n,k-n)
+      if (i!=k)
+        rowswap!(alteredState,i,k)
+        rowswap!(alteredState,i-n,k-n)
+      end
       for k2=i+1:2*n
         if (alteredState[k2,j+n] ==1 ) # z in this "bit"
           rowmult!(alteredState,k2,i)
@@ -405,5 +412,31 @@ function gaussianElimination(state)
 end
 
 
-
+function getStatesFor(state,n)
+    # So the idea is we have the stabilisers with an X in them in upper triangular form
+    # Each X represents a "1" in the Ket
+    # But we need to generate each of the states stabilised by these Paulis.
+    # For the first row, the ones generated are where there is an X in the first row.
+    # On the second row, the ones generated are the second row, and the second row multiplied by the first.
+    # On the third row, its the third row, third times first, third times second and third times first and second
+    # etc.
+    # Aaronsen has a really neat algorighm to do this, but its not easily understood.
+    # I have used this, slighly less efficient, but (I hope) more comprehenisible algorithm
+    # For a particular row (say 3) loop through the numbers 4:7 (being 2^(3-1) to (2^3)-1)
+    # Then we need to multiply the rows together if 2^(row-1) (i.e. row 2 - equates to bit 2) is not zero when
+    # logically anded with the count.
+    number=2^(n-1)
+    nqubits=div(size(state)[1],2)
+  
+    for count = number:(2*number-1)
+        scratchState=state[nqubits+n,:] # the first nqubits are the destabilisers
+        for rows=1:n-1
+            if (2^(rows-1) & count) > 0 
+             scratchState=rowmult(scratchState,state[nqubits+rows,:])
+            end
+        end
+        println("State ")
+        println(scratchState)
+    end
+end
 

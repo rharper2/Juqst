@@ -6,7 +6,10 @@
 # The premise here is that in order to generate a random Clifford, we can be sure of 
 # proper (Haar) randomness if either we generate all the cliffords for a certain quibit size
 # and select one randomly OR if we can have a 1-1 mapping between the integers and the cliffords
-# and then we can just randomly select an integer. The latter is the one adopted in this paper.
+# and then we can just randomly select an integer. The latter is the one adopted in Koenig's paper.
+# getNumberOfCliffords(n) returns the number of cliffords with n qubits. 
+
+
 
 # This ties into the Aaronsen/Gottesman paper becauase the generated cliffords are generated 
 # in such a way it is possible to create the tableau that would result IF the start myVector
@@ -25,6 +28,10 @@
 #   0 m2
 
 using ImageView,Images
+
+function getNumberOfCliffords(n)
+	return 2^(n^2+2*n)*prod([4^x-1 for x =1:n])
+end
 
 function directsum(m1,m2)
   n1=size(m1)[1]
@@ -363,7 +370,7 @@ function identifytheRow(svec,offset,i)
 					end
 					cnot(svec,t+i,i,false)
 					#println("cnot(",j,",",i,")")
-					addCommand("cnot($j,$i,)",Expr(:call,:cnot,:svec,j,i))
+					addCommand("cnot($j,$i)",Expr(:call,:cnot,:svec,j,i))
 				else 
 					#println("hadmard(svec,",i,")")
 					addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
@@ -563,7 +570,7 @@ function drawCircuit()
 	for i = 1:size(commands,1)
 		m = match(r"setup\((.*)\)",commands[i])
 		if (m!=nothing)
-    		for i=1:int(m.captures[1])
+			for i=1:int(m.captures[1])
     			println(cOut,"    qubit q$i")
 			end
     	else
