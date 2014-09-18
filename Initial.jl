@@ -411,6 +411,29 @@ function gaussianElimination(state)
   return (alteredState,gen)
 end
 
+function printBasisState(sS)
+    nqubits=div(size(state)[2],2)
+    e=sS[1,2*nqubits+1]
+    for i=1:nqubits
+      if sS[1,i]==1 && sS[1,nqubits+i]==1 # its a Y
+        e = (e+1) % 4
+      end
+    end
+    if (e==0) print("\n +|")
+    elseif e== 1 print("\n+i|")
+    elseif e==2 print("\n -|")
+    else print("\n-i|")
+    end
+    for i=1:nqubits
+      if sS[1,i]==1
+        print("1")
+      else 
+        print("0")
+      end
+    end
+    print(">")
+end  
+
 
 function getStatesFor(state,n)
     # So the idea is we have the stabilisers with an X in them in upper triangular form
@@ -435,8 +458,7 @@ function getStatesFor(state,n)
              scratchState=rowmult(scratchState,state[nqubits+rows,:])
             end
         end
-        println("State ")
-        println(scratchState)
+        printBasisState(scratchState)
     end
 end
 
