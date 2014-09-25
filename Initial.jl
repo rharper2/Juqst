@@ -8,7 +8,7 @@
 # It is, effectively, a Julia Port of the CHP program by Scott Aaronson
 # The original CHP program can be found at http://www.scottaaronson.com/chp
 
-# Unlike the original I have tried to write for clarity rather than efficiency.
+# Primarily, I have tried to write for clarity rather than efficiency.
 # (Although thanks to the algorithms by Aaronson/Gottesman its fast enough for hundreds of qubits)
 
 function setup(n)
@@ -51,10 +51,10 @@ function output(state)
 	#  otherwise I
 	# last bit is sign.
 	for row=1:n
-	  if state[row,2*n+1] == 0 
-		print("+")
-	  else
+	  if state[row,2*n+1] == 1 
 		print("-")
+	  else
+		print("+")
 	  end
 	  for col=1:n
 	     if state[row,col] == 1
@@ -76,10 +76,10 @@ function output(state)
 	end
 	print("\n")
 	for row=n+1:2*n
-	  if state[row,2*n+1] == 0 
-		  print("+")
-	  else
+	  if state[row,2*n+1] == 1 
 		  print("-")
+	  else
+		  print("+")
 	  end
 	  for col=1:n
 	     if state[row,col] == 1
@@ -215,11 +215,11 @@ function rowsum(state,h,i)
   n=div(size(state)[1],2)
   total = 0;
   for j=1:n
-	xij=state[i,j]
-        zij=state[i,n+j]
-        xhj=state[h,j]
-	zhj=state[h,n+j]
-	total += GottesmanG(xij,zij,xhj,zhj)
+	  xij=state[i,j]
+    zij=state[i,n+j]
+    xhj=state[h,j]
+	  zhj=state[h,n+j]
+	  total += GottesmanG(xij,zij,xhj,zhj)
   end
   rh=state[h,2*n+1]
   ri=state[i,2*n+1]
@@ -229,8 +229,8 @@ function rowsum(state,h,i)
   elseif mod(grandTotal,4) == 2
 	state[h,2*n+1]=1
   else
-	print("Failed sanity check the grandTotal ",grandTotal, " which mods to ",mod(grandTotal,4),"\n")
-  	return
+	   print("Failed sanity check the grandTotal ",grandTotal, " which mods to ",mod(grandTotal,4),"\n")
+  	 return
   end
   for j=1:n
 	state[h,j]=xor(state[i,j],state[h,j]) # xhj=xij xor xhj
@@ -292,7 +292,6 @@ function measure(state,a)
 end
 
 function rowswap!(alteredState,i,k)
-      println("rowswap called with i $i and k $k")
       temp = alteredState[i,:]
       alteredState[i,:]=alteredState[k,:]
       alteredState[k,:]=temp
@@ -324,6 +323,8 @@ function cliffordPhase(i,k)
       end
     end
   end
+  e = e + 2*i[2*n+1] + 2*k[2*n+1]
+
   e = e%4
   if (e < 0) e+=4
   end
@@ -341,8 +342,12 @@ end
 
 function rowmult(i,k) # supply to vectors and get the multiplied vector out.
   n=div(size(i)[2],2)
+  temp = cliffordPhase(i,k)
+  if (temp == 1 || temp ==3)
+    println("TEMP WAS 1 OR 3")
+  end
   tempState = (i $ k) # $ is Julia's bitwise xor.
-  tempState[2*n+1] = cliffordPhase(i,k)
+  tempState[2*n+1]=temp/2
   return tempState
  end
 
@@ -353,6 +358,7 @@ function rowmult(i,k) # supply to vectors and get the multiplied vector out.
 
 function gaussianElimination(state)
   alteredState = copy(state)
+  println(alteredState)
   n=div(size(alteredState)[1],2)
   i = n+1 # first row of commuting generators
   k=0
@@ -361,7 +367,7 @@ function gaussianElimination(state)
   for j=1:n
     found = 0;
   
-    for k=n+1:2*n
+    for k=i:2*n
       # Find a generator containing X in the jth column
       if alteredState[k,j] == 1
         found = 1
@@ -379,8 +385,10 @@ function gaussianElimination(state)
         if alteredState[k2,j] == 1
           rowmult!(alteredState,k2,i)
           rowmult!(alteredState,i-n,k2-n)
+          println("Row mult $k2, $i $alteredState")
         end
       end
+      println(alteredState)
       i+=1
     end
     
@@ -388,12 +396,14 @@ function gaussianElimination(state)
   gen = i - n
   # The first gen generators are X/Ys and in quasi upper triangular form.
   for j=1:n
+    found = 0
     for k=i:2*n
       if alteredState[k,n+j] == 1 # we have found a Z in the jth bit
+        found = 1
         break
       end
     end
-    if k < 2* n
+    if found == 1
       if (i!=k)
         rowswap!(alteredState,i,k)
         rowswap!(alteredState,i-n,k-n)
@@ -434,8 +444,37 @@ function printBasisState(sS)
     print(">")
 end  
 
+function seed(state,n)
+  nqubits=div(size(state)[1],2)
+  println("Qubits $nqubits")
+  scratchState = zeros(Int32,1,2*nqubits+1)
+   for i=2*nqubits:-1:nqubits+n
+    min = nqubits
+    f = 2*state[i,2*nqubits+1]
+    println("F is $f");
+    for j=nqubits:-1:1
+      if state[i,nqubits+j] == 1
+        min = j
+        if state[i,j]==1 
+          f = (f+2)%4
+        end
+      end
+    end
+    if f==2
+      scratchState[1,min] = scratchState[1,min] $ 1
+    end
+  end
+  return scratchState
+end
 
-function getStatesFor(state,n)
+
+
+function getStatesFor(originalState)
+    ss1 = gaussianElimination(originalState)
+    state=ss1[1]
+    println(ss1[1])
+    n=ss1[2]
+    start=seed(state,n)
     # So the idea is we have the stabilisers with an X in them in upper triangular form
     # Each X represents a "1" in the Ket
     # But we need to generate each of the states stabilised by these Paulis.
@@ -445,17 +484,20 @@ function getStatesFor(state,n)
     # etc.
     # Aaronsen has a really neat algorighm to do this, but its not easily understood.
     # I have used this, slighly less efficient, but (I hope) more comprehenisible algorithm
-    # For a particular row (say 3) loop through the numbers 4:7 (being 2^(3-1) to (2^3)-1)
+    # For a particular row (say we are looking at our third row with an X in it (n 3) 
+    # loop through the numbers 4:7 (being 2^(3-1) to (2^3)-1)
+    # In binary, this loops as 100, 101, 110, 111, So we can see This is applying
+    # Row 3 with each possible combintation of Rows 1 and 2.
+    # 
     # Then we need to multiply the rows together if 2^(row-1) (i.e. row 2 - equates to bit 2) is not zero when
     # logically anded with the count.
     number=2^(n-1)
     nqubits=div(size(state)[1],2)
-  
     for count = number:(2*number-1)
-        scratchState=state[nqubits+n,:] # the first nqubits are the destabilisers
+        scratchState=copy(start) # the first nqubits are the destabilisers
         for rows=1:n-1
             if (2^(rows-1) & count) > 0 
-             scratchState=rowmult(scratchState,state[nqubits+rows,:])
+               scratchState=rowmult(scratchState,state[nqubits+rows,:])
             end
         end
         printBasisState(scratchState)
