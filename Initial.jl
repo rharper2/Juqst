@@ -8,7 +8,7 @@
 # It is, effectively, a Julia Port of the CHP program by Scott Aaronson
 # The original CHP program can be found at http://www.scottaaronson.com/chp
 
-# Unlike the original I have tried to write for clarity rather than efficiency.
+# I have tried to write for clarity rather than efficiency.
 # (Although thanks to the algorithms by Aaronson/Gottesman its fast enough for hundreds of qubits)
 
 function setup(n)
