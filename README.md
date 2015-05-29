@@ -7,18 +7,22 @@
 * Implement ability to select an arbitrary Clifford group element [Koenig/Smolin arXiv:quant-ph/1406.2170](http://arxiv.org/abs/1406.2170) (not quite complete - phases not implemented properly yet)
 * Implement the ability to decompose an arbitrary clifford unitary into a quantum circuit consistiting of hadamard, phase and two-qubit cnot gates.(Aaronson/Gottesman arXiv:quant-ph/0406196)
 * Draw the quantum circuit resulting from the decomposition of the clifford/unitary
-###Working on:
+* Implement basic steps to rationalise the decomposed circuit
+* Simple brute force method to determine smallest circuit possible (runs in approximately (n*n)^(n*n) time - probably only for 3 qubits or less, or people with a serious amount of spare time)
 
+###Working on:
 
 - Shadow the stabiliser state with the exact density matrix representing the state (the **"base representation"**)
 - Output the "ket" state represented by the  (Aaronson/Gottesman arXiv:quant-ph/0406196) tabelau (the **"tableau"**)
 - Integrate earlier work pre-defining the steane code generators and logical operators, allowing an arbitrary qubit to be projected into a steane code stabilised state.
 
 ###To do:
+
 - randomised benchmarking from arbitrary cliffords
 - introduce the ability to add noise at the level of the "base representation" as well as in the stabilised state
 - explore noisy quantum channels
 - integrate tomography work
+- optimise the clifford compiler in sub-exponential time
 
 # To install
 
@@ -151,6 +155,8 @@ You will also need from within Julia to add the ImageView package Pkg.add("Image
 Here is a sample IJulia session showing how to use the new drawcircuit functionality.
 
 [IJulia example notebook](http://rharper2.github.io/Juqst/Example%20of%20Draw%20Circuit.html)
+
+Another example book showing how to use the new "rationalise" and bruteForce methods [Minimise Gates](http://rharper2.github.io/Juqst/minimiseGates.html)
 
     getState(state) 
 

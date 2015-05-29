@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Juqst : JUlia Quantum Simulator Toolbox">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Juqst</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/rharper2/Juqst">View on GitHub</a>
+
+          <h1 id="project_title">Juqst</h1>
+          <h2 id="project_tagline">JUlia Quantum Simulator Toolbox</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/rharper2/Juqst/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/rharper2/Juqst/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="juqst-julia-quantum-simulator-toolbox" class="anchor" href="#juqst-julia-quantum-simulator-toolbox"><span class="octicon octicon-link"></span></a><p>Juqst:</p><p style="padding-left:10px">JUlia Quantum Simulator Toolbox</p></h1>
+
+<h2>
+<a name="beginning-of-a-quantum-simulator-toolbox-primarily-written-in-the-julia-language" class="anchor" href="#beginning-of-a-quantum-simulator-toolbox-primarily-written-in-the-julia-language"><span class="octicon octicon-link"></span></a>Beginning of a quantum simulator toolbox, primarily written in the Julia Language</h2>
+
+<h3>
+<a name="done" class="anchor" href="#done"><span class="octicon octicon-link"></span></a>Done:</h3>
+
+<ul>
+<li>Implement the simulation of Stabiliser Circuits <a href="http://arxiv.org/pdf/quant-ph/0406196v5.pdf">(Aaronson/Gottesman arXiv:quant-ph/0406196)</a></li>
+<li>Implement ability to select an arbitrary Clifford group element <a href="http://arxiv.org/abs/1406.2170">(Koenig/Smolin arXiv:quant-ph/1406.2170)</a> (not quite complete - phases not implemented properly yet)</li>
+<li>Implement the ability to decompose an arbitrary clifford unitary into a quantum circuit consistiting of hadamard, phase and two-qubit cnot gates.(Aaronson/Gottesman arXiv:quant-ph/0406196)</li>
+<li> Draw the quantum circuit resulting from the decomposition of the clifford/unitary</li>
+
+<h3>
+<a name="working-on" class="anchor" href="#working-on"><span class="octicon octicon-link"></span></a>Working on:</h3>
+</li>
+<li>Shadow the stabiliser state with the exact density matrix representing the state (the <strong>"base representation"</strong>)</li>
+<li>Output the "ket" state represented by the  (Aaronson/Gottesman arXiv:quant-ph/0406196) tabelau (the <strong>"tableau"</strong>)</li>
+<li>Integrate earlier work pre-defining the steane code generators and logical operators, allowing an arbitrary qubit to be projected into a steane code stabilised state.</li>
+</ul><h3>
+<a name="to-do" class="anchor" href="#to-do"><span class="octicon octicon-link"></span></a>To do:</h3>
+
+<ul>
+<li>randomised benchmarking from arbitrary cliffords</li>
+<li>introduce the ability to add noise at the level of the "base representation" as well as in the stabilised state</li>
+<li>explore noisy quantum channels</li>
+<li>integrate tomography work</li>
+</ul><h1>
+<a name="to-install" class="anchor" href="#to-install"><span class="octicon octicon-link"></span></a>To install</h1>
+
+<p>This has been developed on Julia 3.0. Currently there are two files that need to be loaded.</p>
+
+<p>Move to the directory containing these files </p>
+
+<pre><code>cd("juqst")
+</code></pre>
+
+<p>Then </p>
+
+<pre><code>require("Initial.jl")
+</code></pre>
+
+<p>and </p>
+
+<pre><code>require("Symplectic.jl")
+</code></pre>
+
+<h1>
+<a name="sample-use" class="anchor" href="#sample-use"><span class="octicon octicon-link"></span></a>Sample use</h1>
+
+<h2>
+<a name="stabiliser-circuits" class="anchor" href="#stabiliser-circuits"><span class="octicon octicon-link"></span></a>Stabiliser Circuits</h2>
+
+<pre><code>state = setup(number_ofQubits)
+</code></pre>
+
+<p>prepares the stabiliser state for the correct number of qubits in the |000..000&gt; basis state</p>
+
+<p>The state is represented internally as a matrix of the form:</p>
+
+<p><img src="Matrix.png">Aaronson/Gottesman arXiv:quant-ph/0406196</p>
+
+<p>Currently I am just using Int32 Arrays, although binary arrays would save space (if it ever becomes necessary).</p>
+
+<pre><code>output(state)
+</code></pre>
+
+<p>Prints the state in a human readable form. The states above the line are the 'destabiliser' state, below the line are the 'stabiliser' states. </p>
+
+<p>So in a 3 qubit system the initial state of |000&gt; is coded as </p>
+
+<pre><code>XII
+IXI
+IIX
+---
+ZII
+IZI
+IIZ
+</code></pre>
+
+<p>The following commands are defined</p>
+
+<pre><code>hadamard(state,qubit)  # apply a hadamard to the relevant qubit
+phase(state,qubit)     # apply a phase gate to the relevant qubit
+cnot(state,control,target) # apply a controlled not from control qubit to target qubit
+</code></pre>
+
+<p>Output of the resultant state can be supressed by adding an extra false parameter</p>
+
+<pre><code>hadamard(state,qubit,false) # hadamard as before, but supress output
+</code></pre>
+
+<p><strong>NOTE! that these commands alter the state passed into them. I have broken Julia convention which requires functions 
+with side effects to be written thus - hadamard!(state,qubit).</strong></p>
+
+<h2>
+<a name="arbitrary-cliffords" class="anchor" href="#arbitrary-cliffords"><span class="octicon octicon-link"></span></a>Arbitrary cliffords</h2>
+
+<p>(Koenig/Smolin arXiv:quant-ph/1406.2170)</p>
+
+<p>The idea behind this paper is that we can implement a one-to-one mapping between the cliffords and an integer (plus a random phase string).</p>
+
+<p>The mapping is as follows:</p>
+
+<p><img src="Clifford%20Mapping.png">Koenig/Smolin arXiv:quant-ph/1406.2170</p>
+
+<p>We can generate the alpha,beta,gamma and delta via</p>
+
+<p>symplectic(i,n) # i = integer represting the clifford, n is the number of qubits</p>
+
+<p>Which returns the nxn arrays (alpha-&gt;delta) coded as follows:</p>
+
+<p><img src="coding.png">Koenig/Smolin arXiv:quant-ph/1406.2170</p>
+
+<p>More usefully these can be placed into a stabiliser tableau (that is the equivlent of passing the state |0000&gt; through a gate that implements the unitary in question as follows:</p>
+
+<pre><code>stabiliseSymp(symp) # where symp is the symplectic of the clifford generated.
+</code></pre>
+
+<p>e.g.</p>
+
+<pre><code>state = stabiliseSymp(symplectic(23,4)) # for the tableau of clifford '23' in a 4 qubit system
+</code></pre>
+
+<p>Of course there are actually 4^n versions of of symplectic 23 (here n = 4), because of the different phases that we can have - this will be implemented shortly.</p>
+
+<h1>
+<a name="decomposing-a-tableau-such-as-clifford" class="anchor" href="#decomposing-a-tableau-such-as-clifford"><span class="octicon octicon-link"></span></a>Decomposing a tableau (such as clifford)</h1>
+
+<p>This will be made more general, but just now it decomposes an arbitrary clifford</p>
+
+<pre><code>decompose(clifford_number, qubits)
+</code></pre>
+
+<p>This prints out the elementary gates that would reconstruct the relevant clifford unitary.</p>
+
+<p>The commands are stored as string in the vector commands
+The commands are also stored as Julia code in the vector executeCommands (so you can for instance execute them to re-create the tableau)</p>
+
+<h1>
+<a name="draw-the-circuit" class="anchor" href="#draw-the-circuit"><span class="octicon octicon-link"></span></a>Draw the circuit</h1>
+
+<p>This is a bit more involved, just now I am using IJulia to provide the rich notebook needed to see the circuit.</p>
+
+<p>To install IJulia, full instructions can be found here: <a href="https://github.com/JuliaLang/IJulia.jl">https://github.com/JuliaLang/IJulia.jl</a> but the summary is this</p>
+
+<ul>
+<li>
+<p>You need to have installed ipython, simplest way to do this is install pip if you haven't already and then</p>
+
+<p>sudo pip install ipython[all]</p>
+</li>
+</ul><p>You might also want to install scipy and numpy whilst you are at it, I am going to use them sometime (fer sure)</p>
+
+<ul>
+<li>
+<p>Then from within julia </p>
+
+<p>Pkg.add("IJulia")</p>
+
+<p>If there are any errors fix it (for me it didn't work initially because I had packages from an old version. I removed all my existing packages - identify with Pkg.status() - then Pkg.rm("whatever") - then updated Pkg.update(), then tried again with Pkg.add("IJulia"). This was probably overkill and a Pkg.update() and Pkg.build("IJulia") could work.)</p>
+</li>
+</ul><pre><code>  using IJulia
+  notebook()
+</code></pre>
+
+<p>gets it up and running.</p>
+
+<p>You will also need from within Julia to add the ImageView package Pkg.add("ImageView")</p>
+
+<p>Here is a sample IJulia session showing how to use the new drawcircuit functionality.</p>
+
+<p><a href="./Example%20of%20Draw%20Circuit.html">IJulia example notebook</a>
+</p>
+<pre><code>getState(state) 
+</code></pre>
+
+<p>Is a simple funciton that returns the state the tableau is in vis-a-vis the Aarosnon/Gottesman decomposition algorithm.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Juqst maintained by <a href="https://github.com/rharper2">rharper2</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
