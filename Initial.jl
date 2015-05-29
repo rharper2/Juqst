@@ -11,6 +11,22 @@
 # Primarily, I have tried to write for clarity rather than efficiency.
 # (Although thanks to the algorithms by Aaronson/Gottesman its fast enough for hundreds of qubits)
 
+# I am partially through rationalising some things for ease of REPL
+# If you use a ! command like setup!(4), hadamard!(2) then it acts on the global state
+# Alternatively you can pass in a state like this
+# mystate = setup(3)
+# cnot(mystate,1,2)
+# In which case it will act on the supplied state.
+# Note that this isn't quite in accord with Julia syntax since we still alter the supplied state
+# But there you go.
+
+
+
+function setup!(n)
+  global state
+  state = setup(n)
+end
+
 function setup(n)
   # sets up and returns the initial state vector for n qubits.
   # Heisenberg representation
@@ -39,6 +55,11 @@ function setup(n)
   top = hcat(eye(Int32,n),zeros(Int32,n,n),zeros(Int32,n,1))
   bottom = hcat(zeros(Int32,n,n),eye(Int32,n),zeros(Int32,n,1))
   state = vcat(top,bottom)
+end
+
+function output()
+  global state 
+  output(state)
 end
 
 function output(state)
@@ -103,7 +124,10 @@ function xor(a,b)
 end
 
 
-
+function cnot!(a,b,showOutput=true)
+   global state;
+  cnot(state,a,b,showOutput)
+end
 
 function cnot(state,a,b,showOutput=true)
   # From control a to taget b
@@ -139,6 +163,10 @@ function cnot(state,a,b,showOutput=true)
 end
 
 
+function hadamard!(a,showOutput=true)
+  global state;
+  hadamard(state,a,showOutput)
+end
 
 function hadamard(state,a,showOutput=true)
   # Apply a hadamard gate to quibit a in the state, state.
@@ -162,6 +190,12 @@ function hadamard(state,a,showOutput=true)
    if showOutput
     output(state)
   end
+end
+
+
+function phase!(a,showOutput=true)
+  global state
+  phase(state,a,showOutput)
 end
 
 function phase(state,a,showOutput=true)
@@ -238,6 +272,12 @@ function rowsum(state,h,i)
   end
 end
 	
+function measure!(a)
+  global state 
+  return measure(state,a)
+end 
+
+
 function measure(state,a)
   n=div(size(state)[1],2)
   endC=2*n+1
@@ -358,7 +398,7 @@ function rowmult(i,k) # supply to vectors and get the multiplied vector out.
 
 function gaussianElimination(state)
   alteredState = copy(state)
-  println(alteredState)
+  #println(alteredState)
   n=div(size(alteredState)[1],2)
   i = n+1 # first row of commuting generators
   k=0
@@ -385,10 +425,10 @@ function gaussianElimination(state)
         if alteredState[k2,j] == 1
           rowmult!(alteredState,k2,i)
           rowmult!(alteredState,i-n,k2-n)
-          println("Row mult $k2, $i $alteredState")
+          #println("Row mult $k2, $i $alteredState")
         end
       end
-      println(alteredState)
+      #println(alteredState)
       i+=1
     end
     
@@ -421,9 +461,10 @@ function gaussianElimination(state)
   return (alteredState,gen)
 end
 
+
 function printBasisState(sS)
     nqubits=div(size(state)[2],2)
-    e=sS[1,2*nqubits+1]
+    e=2*sS[1,2*nqubits+1]
     for i=1:nqubits
       if sS[1,i]==1 && sS[1,nqubits+i]==1 # its a Y
         e = (e+1) % 4
@@ -446,12 +487,12 @@ end
 
 function seed(state,n)
   nqubits=div(size(state)[1],2)
-  println("Qubits $nqubits")
+  #println("Qubits $nqubits")
   scratchState = zeros(Int32,1,2*nqubits+1)
    for i=2*nqubits:-1:nqubits+n
     min = nqubits
     f = 2*state[i,2*nqubits+1]
-    println("F is $f");
+    #println("F is $f");
     for j=nqubits:-1:1
       if state[i,nqubits+j] == 1
         min = j
@@ -467,12 +508,16 @@ function seed(state,n)
   return scratchState
 end
 
+function getStates()
+  global state
+  getStatesFor(state)
+end 
 
 
 function getStatesFor(originalState)
     ss1 = gaussianElimination(originalState)
     state=ss1[1]
-    println(ss1[1])
+    #println(ss1[1])
     n=ss1[2]
     start=seed(state,n)
     # So the idea is we have the stabilisers with an X in them in upper triangular form

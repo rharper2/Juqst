@@ -13,26 +13,52 @@
 
 # This ties into the Aaronsen/Gottesman paper becauase the generated cliffords are generated 
 # in such a way it is possible to create the tableau that would result IF the start myVector
-# |000000> had been acted on by the chosen clifford unitory.
+# |000000> had been acted on by the chosen clifford unitary.
 # We can then decompose the tableau using the algorithms specified in the Aaronson/Gottesman paper
 # (see Initial.jl) to work out what combination of one-qubit (phase and hadmard) and two quibit 
 # (cnot) gates would create the unitary in the first place.
 
 # The initial part of this file is a port of the python code in the Koenig/Smolin paper
-# followed by an implementation of the algorithm in the Aaronson/Gottesman paper.
+# followed by an implementation of the decomposition algorithm in the Aaronson/Gottesman paper.
+# There is also code to:
+# -  Draw a decomposed circuit 
+# -  Display the kets of a |00..0> vector transformed by the circuit 
+# -  (Todo) form a 2^n 2^n complex matrix representing the "raw circuit" for use outside this formalism
+# -  There is brute force method for finding the minimum set of gates to construct a given unitary 
+#    (even with only 3qubits this takes a tediously long time to run)
+# -  There is the start of rationalise method, just now it eliminates chains of 4 phase gates or 2 hadamard gates.
+#     Maybe the way to go here is to eliminate recognised patterns. [REF] uses a reverse tree building approach
+#     which is interesting.
+#
+# Use is made of the ability of Julia to manipulate its own commands (a sort of hybrid functional/imperative)
+# approach. With decomposition I am using two global arrays (so remember to copy them if you want to save them)
+# The first "commands" is a text represenetation of the commands needed to rebuild a decomposed end state.
+# the second "executeCommands" contains the actual Julia instructions to rebuild the state.
+# This is better documented in the appropriate methods.
 
-# The generation of the Clifford requires a element from the symplectic group
+# The generation of the Clifford requires an element from the symplectic group
 
-#takes arrays and places them in a larger array, as follows
-#   m1 0
-#   0 m2
 
 using ImageView,Images
 
+# This just shows how big the groups get, Julia overflow is going to be a problem
 function getNumberOfCliffords(n)
 	return 2^(n^2+2*n)*prod([4^x-1 for x =1:n])
 end
 
+# This returns the number without taking into account +/- stuff
+function getNumberOfSymplecticCliffords(n)
+	return 2^(n^2)*prod([4^x-1 for x =1:n])
+end
+
+function getNumberOfBitStringsCliffords(n)
+	return 2^(2*n)
+end
+
+
+#takes arrays and places them in a larger array, as follows
+#   m1 0
+#   0 m2
 function directsum(m1,m2)
   n1=size(m1)[1]
   n2=size(m2)[1]
@@ -208,6 +234,10 @@ end
 #specify the action of the clifford unitary on the X and Z Paulis respectively
 
 function parseSymplectic(symp)
+	#note that here we have (so far) ignored that for a,b,c,d we need to multiply an r and s
+	#then I am guessing we just use rj as bit string on rhs. ie r1 to rn
+	# so with one bit, we have and additional 2*2 * 6
+	# then with two bits its 2^2 * 2^2 = 16 
 	s2 = int(size(symp)[1]/2)
 	a = zeros(s2,s2)
 	b = zeros(s2,s2)
@@ -225,11 +255,20 @@ function parseSymplectic(symp)
 end
 
 # Takes the symplectic, parses it and uses it to create an Aaronson/Gottesman tableau
-function stabiliseSymp(symp)
+#The bits specify the 'bit' pattern that controls the sign
+#For example in the 1 qubit there are only 6 unique 'symplectic' patterns
+#but each of the two rows in the "tableau" can have bit signs of 0 or 1, leading 
+# to 6*4 different cliffords.
+#this is what the bits is.
+
+
+function stabiliseSymp(symp,bits)
 	(a,b,c,d)=parseSymplectic(symp)
+
 	n=size(a)[1]
-	top = hcat(a,b,zeros(Int32,n,1))
-  	bottom = hcat(c,d,zeros(Int32,n,1))
+	top = hcat(a,b,[ (bits >> (x-1)) %2 for x=1:n])
+	bits = div(bits,2)
+  	bottom = hcat(c,d,[ (bits >> (x-1)) %2 for x=1:n])
  	state = convert(Array{Int32,2},vcat(top,bottom))
  end
 
@@ -238,7 +277,7 @@ function stabiliseSymp(symp)
 # where we are taking an arbitrary tableau state and "decomposing" it with basic gates
 # back to the initial |00...00> state.
 function getState(state)
-	as = state[:,1:(size(state,2)-1)] # ignore the sign bits for just now
+	as = state[:,1:end] 
 	# calculate the states, backwards, so we get the "most refined" first
 	#define some useful comparison matrices
 	# The tableau is split up as follows:
@@ -249,7 +288,8 @@ function getState(state)
 	n=div(size(state,1),2) # half the dimension of this 2n x (2n+1) matrix
 	state_i = eye(Int32,n)
 	state_z = zeros(Int32,n,n)
-	if (as==vcat(hcat(state_i,state_z),hcat(state_z,state_i)))
+	state_r = zeros(Int32,n,1)
+	if (as==vcat(hcat(state_i,state_z,state_r),hcat(state_z,state_i,state_r)))
 		return 11
 	end
 	#split up into four matrices
@@ -266,10 +306,10 @@ function getState(state)
 	if (A==state_i && C==state_z && D==state_i)
 		return 7
 	end
-	if (C==state_i && D==state_z)
+	if (C==state_i && D==state_z && as[n+1:2*n,end:end] == state_r)
 		return 6
 	end
-	if (D==state_z)
+	if (D==state_z )
 		return 5
 	end
 	if (C==D)
@@ -336,8 +376,24 @@ function makeCtheI(svec,offset=-1)
 			end
 		end
 	end
+	# now we need double phases to make r_n+1..r_2n to be zero
 end
 
+function zapPhase(svec,offset=-1)
+	n=div(size(svec,1),2) # half the dimension of this 2n x (2n+1) matrix
+	if offset==-1 offset=n # no offset means we assume its the "C" we are making Int32
+	end
+	for i=1:n
+		if (svec[offset+i,end] ==1) 
+			phase(svec,i,false)
+			addCommand("phase($i)",Expr(:call,:phase,:svec,i))
+			phase(svec,i,false)
+			addCommand("phase($i)",Expr(:call,:phase,:svec,i))
+		end 
+	end 
+end
+
+# What I mean is take the passed in row, and use cnots to make it an identity element.
 function identifytheRow(svec,offset,i)
 	#println("Identify row",offset,i)
 	n=div(size(svec,1),2) # half the dimension of this 2n x (2n+1) matrix
@@ -349,38 +405,42 @@ function identifytheRow(svec,offset,i)
 			if (svec[offset+i,i]==0)
 				#println("The diagonal is zero")
 					# make the diagonal one first
-					# some difficulty with losing rank, so the first 
-					# thing to try is a hadmard on this quibit
-				#println("Trying hardy hardimard on bit ",i)
-				hadamard(svec,i,false)
-				if svec[offset+i,i]==0 #didnt work reverse and not
-					#println("that didn't work")
-					if (i==n) #no point in reversing it out if it was the last row
-					#basically we will have flipped a n bit somewhere, so repeat the whole process. 
-					#	println("Going to return false")
-						return false
-					end
+					# using a hadamard can zap the rank
+					# so we should first check if there is a later bit we can cnot into place.
+					#t = getfirstOne(svec[offset+i,i+1:n])
+					#if (t==0) 
+					#	println("OOOPS we couldn't get a one on the diagonl")
+						#println("Trying hardy hardimard on bit ",i)
+				        #hadamard(svec,i,false)
+						#if svec[offset+i,i]==0 #didnt work reverse and not
+						#println("that didn't work")
+						#if (i==n) #no point in reversing it out if it was the last row
+					    #basically we will have flipped a n bit somewhere, so repeat the whole process. 
+					#	return false
+					#end
+
 					#println(svec)
-					hadamard(svec,i,false)
+					#hadamard(svec,i,false)
 					#println("Reverse it out and try a cnot from a later one");
 					t=getfirstOne(svec[offset+i,i+1:end])
 					if (t==0) 
 						println("OOOOOOPPPS DEBUG TIME")
 						return;
 					end
+					#println("a: cnot(",t+i,",",i,")")
 					cnot(svec,t+i,i,false)
-					#println("cnot(",j,",",i,")")
-					addCommand("cnot($j,$i)",Expr(:call,:cnot,:svec,j,i))
-				else 
+					addCommand("cnot($(t+i),$i)",Expr(:call,:cnot,:svec,j,i))
+					#println(svec)
+				#else 
 					#println("hadmard(svec,",i,")")
-					addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
-				end
+				#	addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
+				#end
 			else
-				#println("Diagonal was alread one")
+				#println("Diagonal was already one")
 			end
 			#println("Using the diagonal to zap");
 			#cnot from this found bit, to bit i, to turn it to zero
-			#println("cnot(",i,",",j,")")
+			#println("b: cnot(",i,",",j,")")
 			addCommand("cnot($i,$j)",Expr(:call,:cnot,:svec,i,j))
 			cnot(svec,i,j,false)
 			#println(svec)
@@ -389,14 +449,15 @@ function identifytheRow(svec,offset,i)
 	#so up to the "diagonal element" we have them all 0
 	#println("Checking Diagonal ",i,",",i)
 	if svec[offset+i,i] ==0 # need to get this diagonal equal to 1
-		#println("It wasn't one")
+		#println("It wasn't one we have offset ",offset, " i ", i)
 		t = getfirstOne(svec[offset+i,i+1:end]) + i
+		#println("Got a t back of ",t)
 		if t== 0
 			#println("Couldnt make this the identity\n")
 			return false
 		end
-		cnot(svec,t,i,false)
 		#println("cnot(",t,",",i,")")
+		cnot(svec,t,i,false)
 		addCommand("cnot($t,$i)",Expr(:call,:cnot,:svec,t,i))
 		#println(svec)
 	end
@@ -405,8 +466,8 @@ function identifytheRow(svec,offset,i)
 		#println("CHecking ",i,",",j)
 		if svec[offset+i,j]==1
 			#println("It was one")
-			cnot(svec,i,j,false)
 			#println("cnot(",i,",",j,")")
+			cnot(svec,i,j,false)
 			addCommand("cnot($i,$j)",Expr(:call,:cnot,:svec,i,j))
 			#println(svec)
 		end
@@ -527,19 +588,51 @@ function makeItR0(svec,offset=-1)
 	end
 end
 
-
-
-# decomposies the "arbitrary" clifford i, with qubits j
+# decomposes the "arbitrary" state
 # into a series of cnot, hadamard and phase gates.
 # the gates are contained in text in the vector of strings, "commands"
 # and as Expressions (and thus executable in Julia) in executeCommands
 
-function decompose(i,j=4,supressOutput = false,rationalise=true)
+function decomposeState(state,supressOutput = false,rationalise=true)
 	global commands
 	global executeCommands
 	commands=["output(svec)"]
 	executeCommands = append!(Expr[],[Expr(:call,:output,:svec)])
-	ss1=stabiliseSymp(symplectic(i,j))
+    ss1=state
+	if (!supressOutput) 
+		println("Tableau for unitary: ");
+		output(ss1);
+	end
+	while getState(ss1) < 11
+		nextStep(ss1)
+	end
+	j=div(size(state)[1],2)
+  	addCommand("setup($j)",Expr(:call,:setup,j))
+	reverse!(commands)
+	if rationalise==true
+		removeRedundancy(j)
+	end
+
+	if (!supressOutput) 
+		for i = 1:size(commands,1) 
+			println(commands[i]) 
+		end
+	end
+
+end
+
+
+# decomposes the "arbitrary" clifford i, with qubits j
+# into a series of cnot, hadamard and phase gates.
+# the gates are contained in text in the vector of strings, "commands"
+# and as Expressions (and thus executable in Julia) in executeCommands
+
+function decompose(i,bits,j=4,supressOutput = false,rationalise=true)
+	global commands
+	global executeCommands
+	commands=["output(svec)"]
+	executeCommands = append!(Expr[],[Expr(:call,:output,:svec)])
+	ss1=stabiliseSymp(symplectic(i,j),bits)
 	if (!supressOutput) 
 		println("Tableau for unitary: ");
 		output(ss1);
@@ -615,6 +708,7 @@ function nextStep(ss1)
 		makeItR0(ss1)
 	elseif currentState == 5
 		makeCtheI(ss1)
+		zapPhase(ss1)
 	elseif currentState == 6
 		hadamardHard(ss1)
 	elseif currentState < 9
@@ -625,6 +719,7 @@ function nextStep(ss1)
 		makeItR0(ss1,0)
 	elseif currentState == 10  
 		makeCtheI(ss1,0) # 0 = actually its A
+		zapPhase(ss1,0)
 	elseif currentState == 11
 		println("Done")
 	end
