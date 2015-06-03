@@ -4,7 +4,7 @@
 ###Done:
 
 * Implement the simulation of Stabiliser Circuits [Aaronson/Gottesman arXiv:quant-ph/0406196](http://arxiv.org/pdf/quant-ph/0406196)
-* Implement ability to select an arbitrary Clifford group element [Koenig/Smolin arXiv:quant-ph/1406.2170](http://arxiv.org/abs/1406.2170) (not quite complete - phases not implemented properly yet)
+* Implement ability to select an arbitrary Clifford group element [Koenig/Smolin arXiv:quant-ph/1406.2170](http://arxiv.org/abs/1406.2170)
 * Implement the ability to decompose an arbitrary clifford unitary into a quantum circuit consistiting of hadamard, phase and two-qubit cnot gates.(Aaronson/Gottesman arXiv:quant-ph/0406196)
 * Draw the quantum circuit resulting from the decomposition of the clifford/unitary
 * Implement basic steps to rationalise the decomposed circuit
@@ -13,7 +13,6 @@
 ###Working on:
 
 - Shadow the stabiliser state with the exact density matrix representing the state (the **"base representation"**)
-- Output the "ket" state represented by the  (Aaronson/Gottesman arXiv:quant-ph/0406196) tabelau (the **"tableau"**)
 - Integrate earlier work pre-defining the steane code generators and logical operators, allowing an arbitrary qubit to be projected into a steane code stabilised state.
 
 ###To do:
@@ -26,7 +25,9 @@
 
 # To install
 
-This has been developed on Julia 3.0. Currently there are two files that need to be loaded.
+This has been developed on Julia 3.5. Currently there are two files that need to be loaded.
+
+The current workbook which shows a number of examples is the "A stabiliser run through" workbook. It is probably worth running that one early.
 
 Move to the directory containing these files 
 
@@ -121,6 +122,11 @@ This will be made more general, but just now it decomposes an arbitrary clifford
 
     decompose(clifford_number, qubits)
 
+    more generally, you can also decomposeState(state)
+
+    Both the above have two additional parameters the first is supressOutput, defaults to false and the second is rationalise (default to true)
+    Rationalise simply eliminates 4 phases in a row, two hadamards in a row or self cancelling cnots.
+
 This prints out the elementary gates that would reconstruct the relevant clifford unitary.
 
 The commands are stored as string in the vector commands
@@ -152,7 +158,7 @@ gets it up and running.
 
 You will also need from within Julia to add the ImageView package Pkg.add("ImageView")
 
-Here is a sample IJulia session showing how to use the new drawcircuit functionality.
+Here is a sample IJulia session showing how to use the new drawcircuit functionality. This might be out of date, use the stabiliser run through notebook in preference.
 
 [IJulia example notebook](http://rharper2.github.io/Juqst/Example%20of%20Draw%20Circuit.html)
 
