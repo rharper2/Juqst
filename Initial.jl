@@ -337,7 +337,9 @@ function rowmult!(alteredState,i,k)
   n=div(size(alteredState)[1],2)
   alteredState[i,2*n+1] = cliffordPhase(alteredState,i,k)
   for j=1:2*n
-    alteredState[i,j] = alteredState[i,j] ^ alteredState[k,j]
+    println("Should be doing $i,$j and $k,$j ie ",alteredState[i,j]," with ",alteredState[k,j])
+    alteredState[i,j] = alteredState[i,j] $ alteredState[k,j]
+    println("It is now ", alteredState[i,j])
   end
 end
 
@@ -351,12 +353,12 @@ function gaussianElimination(state)
   alteredState = copy(state)
   n=div(size(alteredState)[1],2)
   i = n+1 # first row of commuting generators
-  print("is is $i")
+  print("i is $i")
   k=0
   k2=0
   j=0
   for j=1:n
-    for k=n+1:2*n
+    for k=i:2*n
       # Find a generator containing X in the jth column
       if alteredState[k,j] == 1
         break
@@ -364,21 +366,29 @@ function gaussianElimination(state)
     end
     if k<2*n
       #swap row with the row pointed to by i
-      rowswap!(alteredState,i,k)
-      rowswap!(alteredState,i-n,k-n) # swap the non-commutators as well
+      if (k!=i) 
+        rowswap!(alteredState,i,k)
+        rowswap!(alteredState,i-n,k-n) # swap the non-commutators as well
+      end
+      println(alteredState)
       # then use the row to eliminate X from that bit in the rest of the tableau
       for k2=i+1:2*n
         println("i is $i K2 $k2 and j $j");
         println("alteredState is ",size(alteredState))
         if alteredState[k2,j] == 1
+          println("Before")
+          println(alteredState)
           rowmult!(alteredState,k2,i)
+          println("After")
+          println(alteredState)
           rowmult!(alteredState,i-n,k2-n)
+
         end
+        println(alteredState)
       end
       println("Adding one to i $i")
       i+=1
     end
-    
   end
   gen = i - n
   # The first gen generators are X/Ys and in quasi upper triangular form.
