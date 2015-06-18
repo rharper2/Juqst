@@ -209,11 +209,17 @@ function phase(state,a,showOutput=true)
     print("Qubit a(",a,") out of range of state which has ",n," qubits\n")
     return
    end
+  # so we need two loops!
   for i = 1:(2*n)
       ri=state[i,endC]
       xia = state[i,a]
       zia = state[i,a+n]
       state[i,endC]=xor(ri,xia*zia)
+   end
+   for i = 1:(2*n)
+      ri=state[i,endC]
+      xia = state[i,a]
+      zia = state[i,a+n]
       state[i,a+n]=xor(xia,zia)
    end
    if showOutput
