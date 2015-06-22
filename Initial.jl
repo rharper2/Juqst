@@ -209,11 +209,17 @@ function phase(state,a,showOutput=true)
     print("Qubit a(",a,") out of range of state which has ",n," qubits\n")
     return
    end
+  # so we need two loops!
   for i = 1:(2*n)
       ri=state[i,endC]
       xia = state[i,a]
       zia = state[i,a+n]
       state[i,endC]=xor(ri,xia*zia)
+   end
+   for i = 1:(2*n)
+      ri=state[i,endC]
+      xia = state[i,a]
+      zia = state[i,a+n]
       state[i,a+n]=xor(xia,zia)
    end
    if showOutput
@@ -423,15 +429,17 @@ function gaussianElimination(state)
       # then use the row to eliminate X from that bit in the rest of the tableau
       for k2=i+1:2*n
         if alteredState[k2,j] == 1
+          println("Before")
+          println(alteredState)
           rowmult!(alteredState,k2,i)
           rowmult!(alteredState,i-n,k2-n)
           #println("Row mult $k2, $i $alteredState")
         end
+        println(alteredState)
       end
       #println(alteredState)
       i+=1
     end
-    
   end
   gen = i - n
   # The first gen generators are X/Ys and in quasi upper triangular form.

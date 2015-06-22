@@ -83,7 +83,6 @@ function generateClifford( clifford,deltaX,deltaY,deltaX2)
         24 => xtheta(pi/2+deltaX2)*ytheta(-pi/2+deltaY)*xtheta(-pi/2+deltaX);
     end
 
-
 end
 
 

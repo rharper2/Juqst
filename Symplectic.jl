@@ -297,13 +297,15 @@ function getState(state)
 	B=as[1:n,n+1:2*n]
 	C=as[n+1:2*n,1:n]
 	D=as[n+1:2*n,n+1:2*n]
-	if (B==state_z && C==state_z)
+	R=as[1:end,end]
+	R2=as[n+1:end,end:end]
+	if (B==state_z && C==state_z && R2==state_r)
 		return 10
 	end
-	if (C==state_z && A==B)
+	if (C==state_z && A==B  && R2==state_r)
 		return 9
 	end
-	if (A==state_i && C==state_z && D==state_i)
+	if (A==state_i && C==state_z && D==state_i && R2==state_r)
 		return 7
 	end
 	if (C==state_i && D==state_z && as[n+1:2*n,end:end] == state_r)
