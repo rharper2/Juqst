@@ -1,6 +1,7 @@
 #SLFunctions.py
 
 from finitefield import *
+import numpy as np
 
 # just enumerate all possible field elements (size 2^n)
 def getExpansion(nos):
@@ -52,6 +53,14 @@ def getWForPoly(x):
               w[i,j]=0
     return w
 
+def getDualBasisForP(x):
+    dualBasis=[]
+    primal = getPolyBasis(x)
+    w=getWForPoly(x,primal)
+    for pr in primal:
+        dualBasis = dualBasis + [x(translateWithW(w,pr))]
+    return  dualBasis
+
 def translateWithW(W,anX):
     mod = anX.modulus
     modP = IntegersModP(mod)
@@ -66,7 +75,19 @@ def translateWithW(W,anX):
             sum+=W[i,j]*lx
         retC =  retC + [sum]
     return (retC)
-            
+  
+#Not quite sure why I needed this
+#Takes the field (.e.g F23) and the modded list from translate and
+# returns the polynomial        
+def toPoly(x,tl):
+    a=[]
+    my1=x([1])
+    for t in tl:
+        if t == my1:
+            a=a+[1]
+        else:
+            a=a+[0]
+    return x(a)  
 
 
             
