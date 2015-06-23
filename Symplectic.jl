@@ -783,7 +783,7 @@ function bruteForceBreadthFirst(clifford)
 		return
 	end
 	currentAt = 1
-	while (state!=11 && size(gatesToApply,1) < n*n)
+	while (state!=11 && size(gatesToApply,1) < n*n*n*n*n*n*n*n*n*n)
 		svec = copy(clifford)
 		incrementGate!(gatesToApply,maxGates)
 		count += 1
