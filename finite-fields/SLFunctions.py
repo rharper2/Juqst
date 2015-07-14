@@ -160,7 +160,15 @@ def getAllStabilisers(fieldType):
     return stabiliserList
 
             
-            
+def getF2SLGroups():
+    field,slm = setUpSLGroups(FiniteField(2,2))
+    return (field,slm)
+
+def getF3SLGroups():
+    field,slm = setUpSLGroups(FiniteField(2,3))
+    return (field,slm)
+
+
 def getF2Stabilisers():
     return getAllStabilisers(FiniteField(2,2))
 

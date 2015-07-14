@@ -812,6 +812,7 @@ function bruteForceBreadthFirst(clifford)
 	else
 		println("Didn't find it!")
 	end
+	return gatesToApply
 end
 
 #coding for current bits
