@@ -267,7 +267,9 @@ function stabiliseSymp(symp,bits)
 
 	n=size(a)[1]
 	top = hcat(a,b,[ (bits >> (x-1)) %2 for x=1:n])
-	bits = div(bits,2)
+	for co=1:n 
+		bits = div(bits,2)
+	end
   	bottom = hcat(c,d,[ (bits >> (x-1)) %2 for x=1:n])
  	state = convert(Array{Int32,2},vcat(top,bottom))
  end
