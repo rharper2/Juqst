@@ -3,7 +3,7 @@
 from finitefield import *
 import numpy as np
 import numpy.linalg as lg 
-
+import csv
 # just enumerate all possible field elements (size 2^n)
 def getExpansion(nos):
     if nos==1:
@@ -52,14 +52,17 @@ def getWForPoly(x):
               w[i,j]=1
             else:
               w[i,j]=0
+    return w
+
+def getW_WBForPoly(x):
+    w=getWForPoly(x)
     return w,abs(lg.inv(w))
 
-def getDualBasisForP(x):
+def getDualBasisForP(x,w):
     dualBasis=[]
     primal = getPolyBasis(x)
-    w=getWForPoly(x,primal)
     for pr in primal:
-        dualBasis = dualBasis + [x(translateWithW(w,pr))]
+        dualBasis = dualBasis + [polyToList(x(translateWithW(w,pr)))]
     return  dualBasis
 
 def translateWithW(W,anX):
@@ -100,7 +103,7 @@ def getAlpha(field,no):
     return np.array([ [field[no[0]],field[no[1]] ], [ field[no[2]],field[no[3]]]])
 
 
-def createStabiliserBasis(x):
+def createStabiliserBasis(x,w,wb):
     """ Returns the matrices for the field x
         That are required to form the stabiliser states
         You would normally multiply this by the relevant SL matrix
@@ -108,7 +111,6 @@ def createStabiliserBasis(x):
     
     """    
     matrices=[]
-    w,wb=getWForPoly(x)
     for i in range(0,x.degree):
         makingIt=[]
         for pre in range(0,i):
@@ -125,6 +127,16 @@ def createStabiliserBasis(x):
         samples = samples + [np.array([[x(0)],[toPoly(x,translateWithW(wb,x(i)))]])]
     return samples
 
+#def createStabiliserBasis(x):
+    """ Returns the matrices for the field x
+        That are required to form the stabiliser states
+        You would normally multiply this by the relevant SL matrix
+     to get the stabiliser state that represents the clifford you want
+    
+    """    
+ #   w,wb=getW_WBForPoly(x)
+   # return createSabiliserBasis(x,w,wb)
+    
 def polyToList(x):
     """
         Takes a field and returns a list of coefficients, including redundant zeros
@@ -141,9 +153,9 @@ def polyToList(x):
         toRet.append(0)
     return toRet
 
-def stabiliserFori(fieldType,field,slm,no,stabsA):
+def stabiliserFori(fieldType,field,slm,no,stabsA,w):
     fullStabiliser = []
-    w,wb=getWForPoly(fieldType)
+    w,wb=getW_WBForPoly(fieldType)
     mat=getAlpha(field,slm[no])
     for i in stabsA:
           temp =  np.dot(mat,i)
@@ -153,10 +165,11 @@ def stabiliserFori(fieldType,field,slm,no,stabsA):
 
 def getAllStabilisers(fieldType):
     field,slm = setUpSLGroups(fieldType)
-    stabsA = createStabiliserBasis(fieldType)
+    w,wb=getW_WBForPoly(fieldType)
+    stabsA = createStabiliserBasis(fieldType,w,wb)
     stabiliserList = []
     for i,idx in enumerate(slm):
-        stabiliserList.append(stabiliserFori(fieldType,field,slm,i,stabsA))
+        stabiliserList.append(stabiliserFori(fieldType,field,slm,i,stabsA,w))
     return stabiliserList
 
             
@@ -174,3 +187,33 @@ def getF2Stabilisers():
 
 def getF3Stabilisers():
     return getAllStabilisers(FiniteField(2,3))
+
+def getF4Stabilisers():
+    return getAllStabilisers(FiniteField(2,4))
+
+def getF6Stabilisers():
+  count=0;
+  x=FiniteField(2,6)
+  elements=getExpansion(x.degree)
+  field=[]
+  for i in elements:
+        field.append(x(i))
+   # Just now assuming GF(2^n)
+  slm =[]
+  with open('../sl60_1.csv', 'rb') as csvfile:
+     sl60 = csv.reader(csvfile)
+     for row in sl60:
+         arow=[]
+         for i in row:
+              arow += [int(i)]
+         slm.append(arow)
+  print("Fields and SL group sorted")
+  w,wb=getW_WBForPoly(fieldType)
+  stabsA=createStabiliserBasis(x,w,wb)
+  print("Basis done")
+  stabiliserList=[]
+  for i,idx in enumerate(slm):
+        stabiliserList.append(stabiliserFori(x,field,slm,i,stabsA,w))
+  return stabiliserList
+
+
