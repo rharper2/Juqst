@@ -112,7 +112,7 @@ More usefully these can be placed into a stabiliser tableau (that is the equivle
 
 e.g.
 
-    state = stabiliseSymp(symplectic(23,4)) # for the tableau of clifford '23' in a 4 qubit system
+    state = stabiliseSymp(symplectic(23,4),3) # for the tableau of clifford '23' in a 4 qubit system - the final 3 sets versious sign bits.
 
 Of course there are actually 4^n versions of of symplectic 23 (here n = 4), because of the different phases that we can have - this will be implemented shortly.
 

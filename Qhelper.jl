@@ -1,8 +1,8 @@
 require("LinearEstimate.jl")
 
 #copied this from Steve's source
-#not 100% sure how it works.
-#however it seems that we take a nxr matrix
+
+#It seems that we take a nxr matrix
 #and expand it to one that is nxn but will 
 #decompose to nxr (degenerate?)
 function randomRankReduced(n,r)
@@ -158,8 +158,8 @@ end
 
 
 function generateTheStabilisers()
-   global stabilisers={}
-   gens = { g1,g2,g3,g4,g5,g6}
+   global stabilisers=[]
+   gens = [g1,g2,g3,g4,g5,g6]
    push!(stabilisers,g1)
    push!(stabilisers,g2)
    push!(stabilisers,g3)
@@ -236,9 +236,9 @@ end
 
 function checkPaulis()
   lengthOfPaulis = size(ALLPAULI,2) #number of tensored matrixes.
-   global nonCommuters={}
-   global pauliInStabilisers={}
-   global commutingNonStabilisers={}
+   global nonCommuters=[]
+   global pauliInStabilisers=[]
+   global commutingNonStabilisers=[]
   dim=convert(Int64,sqrt(lengthOfPaulis))
   if (dim !=128 )
       print("Just now we are only checking the paulis against steane code generators, so you need to initialise(7) make a hot cup of tea and try again")
