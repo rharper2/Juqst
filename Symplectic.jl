@@ -39,7 +39,6 @@
 # The generation of the Clifford requires an element from the symplectic group
 
 
-using ImageView,Images
 
 # This just shows how big the groups get, Julia overflow is going to be a problem
 function getNumberOfCliffords(n)
@@ -181,7 +180,7 @@ function symplectic(i,n)
 	nn=2*n
 	s=((1<<nn)-1)
 	k=(i%s)+1
-	i=int(i/s)
+	i=round(Int,(i/s))
 	# step 2
 	f1=int2bits(k,nn)
 	#step 3
@@ -196,7 +195,7 @@ function symplectic(i,n)
 		println("If the need arises");
 		return;
 	end
-	bits=int2bits(i%(convert(Uint128,1)<<(nn-1)),nn-1)
+	bits=int2bits(i%(convert(UInt128,1)<<(nn-1)),nn-1)
 
 	#step 5
 	# Note that in Julia we need to expressly copy
@@ -204,8 +203,8 @@ function symplectic(i,n)
 	for j in  3:nn
 		eprime[j]=bits[j-1]
 	end
-	h0=transvection(T[1,:]',eprime)
-	h0=transvection(T[2,:]',h0)
+	h0=transvection(T[1:1,:]',eprime)
+	h0=transvection(T[2:2,:]',h0)
 
 	#step 6
 	if bits[1]==1
@@ -221,10 +220,10 @@ function symplectic(i,n)
 		g=id2
 	end
 	for j in 1:nn
-		g[j,:]=transvection(T[1,:]',g[j,:]')
-		g[j,:]=transvection(T[2,:]',g[j,:]')
-		g[j,:]=transvection(h0,g[j,:]')
-		g[j,:]=transvection(f1,g[j,:]')
+		g[j,:]=transvection(T[1:1,:]',g[j:j,:]')
+		g[j,:]=transvection(T[2:2,:]',g[j:j,:]')
+		g[j,:]=transvection(h0,g[j:j,:]')
+		g[j,:]=transvection(f1,g[j:j,:]')
 	end
 	return g
 end
@@ -238,7 +237,7 @@ function parseSymplectic(symp)
 	#then I am guessing we just use rj as bit string on rhs. ie r1 to rn
 	# so with one bit, we have and additional 2*2 * 6
 	# then with two bits its 2^2 * 2^2 = 16 
-	s2 = int(size(symp)[1]/2)
+	s2 = round(Int,(size(symp)[1]/2))
 	a = zeros(s2,s2)
 	b = zeros(s2,s2)
 	c = zeros(s2,s2)
@@ -611,7 +610,7 @@ function decomposeState(state,supressOutput = false,rationalise=true)
 		nextStep(ss1)
 	end
 	j=div(size(state)[1],2)
-  	addCommand("setup($j)",Expr(:call,:setup,j))
+	addCommand("setup($j)",Expr(:call,:setup,j))
 	reverse!(commands)
 	if rationalise==true
 		removeRedundancy(j)
@@ -659,44 +658,7 @@ function decompose(i,bits,j=4,supressOutput = false,rationalise=true)
 end
 
 
-function drawCircuit()
-	global commands
-	currentDir = pwd()
-	try
-	cOut = open("qasm/temp.qasm","w")
-	for i = 1:size(commands,1)
-		m = match(r"setup\((.*)\)",commands[i])
-		if (m!=nothing)
-			for i=1:int(m.captures[1])
-    			println(cOut,"    qubit q$i")
-			end
-    	else
-    		m=match(r"hadamard\((.*)\)",commands[i])
-    		if (m!=nothing)
-    			println(cOut,"     h q",m.captures[1])
-    		else 
-    			m=match(r"phase\((.*)\)",commands[i])
-    			if (m!=nothing) # QASM doesn't appear to have Phase gates, so output an S
-    				# I altered QASM to print a P instead of an S.
-    				println(cOut,"     S q",m.captures[1])
-    			else
-    				m=match(r"cnot\((.*),(.*)\)",commands[i])
-    				if (m!=nothing)
-    					println(cOut,"     cnot q",m.captures[1],",q",m.captures[2])
-    				end
-    			end
-    		end
-    	end
-    end
-    close(cOut)
-    cd("qasm")
-	test = `csh qasm2png temp.qasm`
-	temp = readall(test) 
-	finally
-	  cd(currentDir)
-	end
-	img = imread("qasm/temp.png")
-end
+
 
 function nextStep(ss1)
 	currentState = getState(ss1)
@@ -833,7 +795,7 @@ function checkGate(index,currentBits,n)
     end
     m=match(r"hadamard\((.*)\)",checking)
     if (m!=nothing)
-    	bit = int(m.captures[1])
+    	bit = parse(Int,(m.captures[1]))
     	if size(currentBits[bit],1) > 0
     		if currentBits[bit][end][1] == 2
     			# two hadamards make a nothing
@@ -850,7 +812,7 @@ function checkGate(index,currentBits,n)
 	end
 	m=match(r"phase\((.*)\)",checking)
     if (m!=nothing) # Its a phase, we need 4 of these
-    	bit = int(m.captures[1])
+    	bit = parse(Int,(m.captures[1]))
     	if size(currentBits[bit],1) > 2
     		if currentBits[bit][end][1] == 1 && currentBits[bit][end-1][1] == 1 && currentBits[bit][end-2][1] == 1
     			# four phases make a nothing.
@@ -871,8 +833,8 @@ function checkGate(index,currentBits,n)
 	end
 	m=match(r"cnot\((.*),(.*)\)",checking)
     if (m!=nothing)
-    		cbit = int(m.captures[1])
-    		tbit = int(m.captures[2])
+    		cbit = parse(Int,(m.captures[1]))
+    		tbit = parse(Int,(m.captures[2]))
     		# so just now we are going to catch two cnots in a row
     		# needs to match both bits.
     		cbitNo = 2+tbit
@@ -897,7 +859,7 @@ function removeRedundancy(n)
 	global executeCommands
 	global toDelete
 	toDelete = (Int32)[]
-	bitsOf = (Array{(Int32,Int32)})[]
+	bitsOf = (Array{Tuple{Int32,Int32}})[]
 	for i=1:n
     	push!(bitsOf,[])
 	end
@@ -910,6 +872,42 @@ end
 
 
 
+##I am going to use the symplectic method to generate all the cliffords
+# - Noting that we have 24, therefore there are 6 'symplectics' and 2*2=4 different bit patterns
+# - Decompose, internally generates the stabilised regime and then works out what pattern of Hadamards and Phase gates are necessary to generate this, these are stored in "commands". [Here we are in the one Qubit regime - so there are no CNOTS]
+# - I use a simple loop to execute the commands using a phase gate and hadamard gate. If we were to repeat this > 1 qubit, we would need to blow up the phase gates etc (for example, if we were in 3 qubit regime and it was phase(2) i.e. phase on the second qubit, we would multiply by $I\otimes P \otimes I$ 
+# - Better still we could define our gates (here sphase, and shadamard) to have errors and get an erroneous clifford
+ 
+function generateRawCliffords() 
+	straightClifford = Array{Complex{Float64},2}[]
+	sphase=[1 0;0 im]
+	shadmard=1/sqrt(2)*[1 1;1 -1]
+	state=[1 0;0 1]
+	for i=1:6
+    	for j=1:4
+        	decompose(i,j,1,true)
+        	for t in commands
+           		m = match(r"setup\((.*)\)",t)
+            	if (m!=nothing)
+                	state=[1 0;0 1]
+            	else 
+                	m=match(r"phase\((.*)\)",t)
+                	if (m!=nothing)
+           	        	state=state*sphase
+            	    else
+                    	m=match(r"hadamard\((.*)\)",t)
+                    	if (m!=nothing)
+                        	state=state*shadmard
+                    	else
+                        	push!(straightClifford,round(state,10))
+                    	end
+                	end
+            	end
+        	end
+    	end
+    end
+    return straightClifford
+end
 
 
 
