@@ -11,7 +11,7 @@ function generateFullBasePaulis()
   x = [0 1;1 0] #reshape([0,1,1,0],2,2)
   z = [1 0;0 -1] #reshape([1,0,0,-1],2,2)
   y = [0 -1*im;im 0] #reshape([0,-1*im,1*im,0],2,2)
-  global FullBasePaulis=[i,x,y,z]
+  global FullBasePaulis=[i;x;y;z]
 end
 
 function getPauliName(i)

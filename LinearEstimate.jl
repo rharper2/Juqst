@@ -5,9 +5,9 @@
 #and the rebuilt one, using the index number of the constructed
 #Pauli tensor.
 
-require("densityMatrixCreation.jl")
+include("densityMatrixCreation.jl")
 # require("sparseDensityMatrixCreation.jl")
-require("densePauliFunctions.jl")
+include("densePauliFunctions.jl")
 
 # Initialise the system (setting up globals etc) for n quibits
 function initialise(n::Int64)
@@ -21,8 +21,8 @@ function initialise(n::Int64)
     
   # when we were generating the Paulis, I omitted the 1/sqrt(2) factor
   # so introduce it here.
-   global ALLPAULI
-   global AllPauliNames 
+    global ALLPAULI
+    global AllPauliNames 
     (ALLPAULI,AllPauliNames) = getAllPaulis(pauliSize) 
     ALLPAULI = ALLPAULI * *(1/sqrt(2))^n
   # once I know I have it right, I should save these somewhere.
