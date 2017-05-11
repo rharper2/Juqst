@@ -124,9 +124,9 @@ function xor(a,b)
 end
 
 
-function cnot!(a,b,showOutput=true)
+function cnot(a,b)
    global state;
-  cnot(state,a,b,showOutput)
+  cnot(state,a,b,false)
 end
 
 function cnot(state,a,b,showOutput=true)
@@ -163,9 +163,9 @@ function cnot(state,a,b,showOutput=true)
 end
 
 
-function hadamard!(a,showOutput=true)
+function hadamard(a)
   global state;
-  hadamard(state,a,showOutput)
+  hadamard(state,a,false)
 end
 
 function hadamard(state,a,showOutput=true)
@@ -193,9 +193,9 @@ function hadamard(state,a,showOutput=true)
 end
 
 
-function phase!(a,showOutput=true)
+function phase(a)
   global state
-  phase(state,a,showOutput)
+  phase(state,a,false)
 end
 
 function phase(state,a,showOutput=true)

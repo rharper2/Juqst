@@ -793,7 +793,7 @@ function checkGate(index,currentBits,n)
 	if (m!=nothing)
     	return
     end
-    m=match(r"hadamard\((.*)\)",checking)
+    m=match(r"hadamard\(.*,(.*)\)",checking)
     if (m!=nothing)
     	bit = parse(Int,(m.captures[1]))
     	if size(currentBits[bit],1) > 0
@@ -810,7 +810,7 @@ function checkGate(index,currentBits,n)
 		end
 		return
 	end
-	m=match(r"phase\((.*)\)",checking)
+	m=match(r"phase\(.*,(.*)\)",checking)
     if (m!=nothing) # Its a phase, we need 4 of these
     	bit = parse(Int,(m.captures[1]))
     	if size(currentBits[bit],1) > 2
@@ -831,7 +831,7 @@ function checkGate(index,currentBits,n)
 		end
 		return
 	end
-	m=match(r"cnot\((.*),(.*)\)",checking)
+	m=match(r"cnot\(.*,(.*),(.*)\)",checking)
     if (m!=nothing)
     		cbit = parse(Int,(m.captures[1]))
     		tbit = parse(Int,(m.captures[2]))
@@ -891,11 +891,11 @@ function generateRawCliffords()
             	if (m!=nothing)
                 	state=[1 0;0 1]
             	else 
-                	m=match(r"phase\((.*)\)",t)
+                	m=match(r"phase\(.*,(.*)\)",t)
                 	if (m!=nothing)
            	        	state=state*sphase
             	    else
-                    	m=match(r"hadamard\((.*)\)",t)
+                    	m=match(r"hadamard\(.*,(.*)\)",t)
                     	if (m!=nothing)
                         	state=state*shadmard
                     	else
@@ -909,6 +909,114 @@ function generateRawCliffords()
     return straightClifford
 end
 
+function makeFromCommand(command)
+    currentState = []
+    totalBit=0
+    si = [1 0;0 1]
+    phaseGate=[1 0;0 im]
+    shadmard=1/sqrt(2)*[1 1;1 -1]
+    ident = [1 0;0 1]
+    x = [0 1;1 0] 
+    z = [1 ;0]*[1 0]
+    one = [0 ;1]*[0 1]
+    for t in command
+        m = match(r"setup\((.*)\)",t)
+        if (m!=nothing)
+        	bit = parse(Int,(m.captures[1]))
+        	tstate = ident 
+        	totalBit=bit 
+        	for i=2:bit 
+        		tstate = kron(tstate,ident)
+        	end
+        	currentState = tstate
+        else 
+           m=match(r"phase\((.*)\)",t)
+           if (m!=nothing)
+           		bit = parse(Int,(m.captures[1]))
+           		tstate = phaseGate
+           		for i=1:bit-1
+           			tstate=kron(ident,tstate)
+           		end
+           		for i=bit+1:totalBit
+           			tstate=kron(tstate,ident)
+           		end
+    			currentState = currentState*tstate
+            else
+                m=match(r"hadamard\((.*)\)",t)
+                if (m!=nothing)
+           			bit = parse(Int,(m.captures[1]))
+	           		tstate = shadmard
+    	       		for i=1:bit-1
+        	   			tstate=kron(ident,tstate)
+           			end
+           			for i=bit+1:totalBit
+           				tstate=kron(tstate,ident)
+           			end
+           			currentState = currentState*tstate
+                else
+                    m=match(r"cnot\((.*),(.*)\)",t)
+                    if (m!=nothing)
+                        cbit = parse(Int,(m.captures[1]))
+                        tbit = parse(Int,(m.captures[2]))
+                        if cbit < tbit
+                        	startB=cbit 
+                        	endB = tbit 
+                        	zeroState = z
+                        	oneState = one
+                        	for i=cbit+1:tbit-1
+                        		zeroState=kron(zeroState,ident)
+                        		oneState=kron(oneState,ident)
+                        	end 
+                        	zeroState = kron(zeroState,ident)
+                        	oneState = kron(oneState,x)
+                        	cbitToDo=zeroState+oneState
+                        else
+                        	startB=tbit 
+                        	endB = cbit 
+                        	zeroState = z
+                        	oneState = one
+                        	for i=tbit+1:cbit-1
+                        		zeroState=kron(ident,zeroState)
+                        		oneState=kron(ident,oneState)
+                        	end 
+                        	zeroState = kron(ident,zeroState)
+                        	oneState = kron(x,oneState)
+                        	cbitToDo=zeroState+oneState
+                        end 
+                        for i=1:startB-1
+                        	cbitToDo=kron(ident,cbitToDo)
+                        end
+                        
+                        for i=endB+1:totalBit
+                        	cbitToDo=kron(cbitToDo,ident)
+						end
+						currentState = currentState*cbitToDo
+                    end
+                end
+            end
+        end
+    end
+    return  currentState=currentState
+end
+
+
+function reverseCommandList(commands)
+	tempCommands = reverse(commands)
+	tempCommands[length(tempCommands)] = commands[length(tempCommands)]
+	tempCommands[1]=commands[1]
+	final=[]
+	for i in tempCommands
+		m=match(r"phase\((.*)\)",i)
+        if m!=nothing
+        	push!(final,i)
+        	push!(final,i)
+        	push!(final,i)
+        else 
+        	push!(final,i)
+        end 
+    end
+    return final  
+end
 
 
 
