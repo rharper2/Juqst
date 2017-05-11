@@ -576,6 +576,7 @@ end
 # into a series of cnot, hadamard and phase gates.
 # the gates are contained in text in the vector of strings, "commands"
 # and as Expressions (and thus executable in Julia) in executeCommands
+currentStateStep=0
 
 function decomposeState(state,supressOutput = false,rationalise=true)
 	global commands
@@ -588,7 +589,13 @@ function decomposeState(state,supressOutput = false,rationalise=true)
 		output(ss1);
 	end
 	while getState(ss1) < 11
+		currentStateStep=getState(ss1)
 		nextStep(ss1)
+		if getState(ss1) <= currentStateStep
+			print("Took a non-step, this is a problem.")
+			print("We were in $(currentStateStep) and then after nextStep we are in $(getState(ss1))\n")
+			return 
+		end
 	end
 	j=div(size(state)[1],2)
 	addCommand("setup($j)",Expr(:call,:setup,j))
@@ -643,6 +650,7 @@ end
 
 function nextStep(ss1)
 	currentState = getState(ss1)
+
 	if (currentState == 0)
 		getFullRank(ss1)
 	elseif currentState == 1
@@ -774,7 +782,7 @@ function checkGate(index,currentBits,n)
 	if (m!=nothing)
     	return
     end
-    m=match(r"hadamard\((.*)\)",checking)
+    m=match(r"hadamard\(.*,(.*)\)",checking)
     if (m!=nothing)
     	bit = parse(Int,(m.captures[1]))
     	if size(currentBits[bit],1) > 0
@@ -791,7 +799,7 @@ function checkGate(index,currentBits,n)
 		end
 		return
 	end
-	m=match(r"phase\((.*)\)",checking)
+	m=match(r"phase\(.*,(.*)\)",checking)
     if (m!=nothing) # Its a phase, we need 4 of these
     	bit = parse(Int,(m.captures[1]))
     	if size(currentBits[bit],1) > 2
@@ -812,7 +820,7 @@ function checkGate(index,currentBits,n)
 		end
 		return
 	end
-	m=match(r"cnot\((.*),(.*)\)",checking)
+	m=match(r"cnot\(.*,(.*),(.*)\)",checking)
     if (m!=nothing)
     		cbit = parse(Int,(m.captures[1]))
     		tbit = parse(Int,(m.captures[2]))
@@ -872,11 +880,11 @@ function generateRawCliffords()
             	if (m!=nothing)
                 	state=[1 0;0 1]
             	else 
-                	m=match(r"phase\((.*)\)",t)
+                	m=match(r"phase\(.*,(.*)\)",t)
                 	if (m!=nothing)
            	        	state=state*sphase
             	    else
-                    	m=match(r"hadamard\((.*)\)",t)
+                    	m=match(r"hadamard\(.*,(.*)\)",t)
                     	if (m!=nothing)
                         	state=state*shadmard
                     	else
