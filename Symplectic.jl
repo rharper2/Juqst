@@ -87,6 +87,10 @@ function addCommand(comToAdd,comm)
 	executeCommands=append!(executeCommands,[comm]);
 end
 
+commands=[]
+executeCommands=[]
+state=[]
+
 
 # Returns the symplectic inner product of two vectors.
 
@@ -355,13 +359,14 @@ function getFullRank(svec)
 end
 
 function getfirstOne(myVector)
-	#println(myVector)
-	for i=1:size(myVector,2)
+	for i=1:length(myVector)
 		if myVector[i]==1
 			#println("return ",i) 
 			return i
 		end
 	end
+	print("******* THIS MAY BE AN ERROR BUT GET FIRST ONE COULDNT FIND A 1********\n")
+	print("$myVector\n")
 	return 0
 end
 
@@ -398,67 +403,43 @@ end
 
 # What I mean is take the passed in row, and use cnots to make it an identity element.
 function identifytheRow(svec,offset,i)
-	#println("Identify row",offset,i)
+	#print("Identify row $offset $i\n")
 	n=div(size(svec,1),2) # half the dimension of this 2n x (2n+1) matrix
+	#for ite in svec[offset+i,1:n]
+	#	print("$ite,")
+	#end
+	#print("\n")
 	#println("N is ",n)
 	for j=1:i-1
 		#println("Check ",i,",",j)
 		if svec[offset+i,j]!= 0
 			#println("Wasnt zero")
 			if (svec[offset+i,i]==0)
-				#println("The diagonal is zero")
-					# make the diagonal one first
-					# using a hadamard can zap the rank
-					# so we should first check if there is a later bit we can cnot into place.
-					#t = getfirstOne(svec[offset+i,i+1:n])
-					#if (t==0) 
-					#	println("OOOPS we couldn't get a one on the diagonl")
-						#println("Trying hardy hardimard on bit ",i)
-				        #hadamard(svec,i,false)
-						#if svec[offset+i,i]==0 #didnt work reverse and not
-						#println("that didn't work")
-						#if (i==n) #no point in reversing it out if it was the last row
-					    #basically we will have flipped a n bit somewhere, so repeat the whole process. 
-					#	return false
-					#end
-
-					#println(svec)
-					#hadamard(svec,i,false)
-					#println("Reverse it out and try a cnot from a later one");
-					t=getfirstOne(svec[offset+i,i+1:end])
-					if (t==0) 
+				t=getfirstOne(svec[offset+i,i:end])
+				#print("Get first One returned $t\n")
+				if (t==0) 
 						println("OOOOOOPPPS DEBUG TIME")
 						return;
-					end
-					#println("a: cnot(",t+i,",",i,")")
-					cnot(svec,t+i,i,false)
-					addCommand("cnot($(t+i),$i)",Expr(:call,:cnot,:svec,j,i))
-					#println(svec)
-				#else 
-					#println("hadmard(svec,",i,")")
-				#	addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
-				#end
-			else
-				#println("Diagonal was already one")
+				end
+				# Put a one on the diagonal.
+				cnot(svec,t+i,i,false)
+				addCommand("cnot($(t+i),$i)",Expr(:call,:cnot,:svec,j,i))
 			end
-			#println("Using the diagonal to zap");
-			#cnot from this found bit, to bit i, to turn it to zero
-			#println("b: cnot(",i,",",j,")")
 			addCommand("cnot($i,$j)",Expr(:call,:cnot,:svec,i,j))
 			cnot(svec,i,j,false)
-			#println(svec)
 		end
 	end
 	#so up to the "diagonal element" we have them all 0
 	#println("Checking Diagonal ",i,",",i)
 	if svec[offset+i,i] ==0 # need to get this diagonal equal to 1
-		#println("It wasn't one we have offset ",offset, " i ", i)
-		t = getfirstOne(svec[offset+i,i+1:end]) + i
+		#println("It wasn't one in the diagonal we have offset ",offset, " i ", i)
+		t = getfirstOne(svec[offset+i,i:n]) 
 		#println("Got a t back of ",t)
-		if t== 0
-			#println("Couldnt make this the identity\n")
+		if t==0
+			println("Couldnt make this the identity\n")
 			return false
 		end
+		t=t+i-1
 		#println("cnot(",t,",",i,")")
 		cnot(svec,t,i,false)
 		addCommand("cnot($t,$i)",Expr(:call,:cnot,:svec,t,i))
@@ -466,7 +447,7 @@ function identifytheRow(svec,offset,i)
 	end
 	# so the diagonal element is now 1, make the rest zero
 	for j=i+1:n
-		#println("CHecking ",i,",",j)
+		#println("Checking to make zero",i,",",j)
 		if svec[offset+i,j]==1
 			#println("It was one")
 			#println("cnot(",i,",",j,")")
@@ -599,7 +580,7 @@ end
 function decomposeState(state,supressOutput = false,rationalise=true)
 	global commands
 	global executeCommands
-	commands=["output(svec)"]
+	commands=["output(state)"]
 	executeCommands = append!(Expr[],[Expr(:call,:output,:svec)])
     ss1=state
 	if (!supressOutput) 
@@ -633,7 +614,7 @@ end
 function decompose(i,bits,j=4,supressOutput = false,rationalise=true)
 	global commands
 	global executeCommands
-	commands=["output(svec)"]
+	commands=["output(state)"]
 	executeCommands = append!(Expr[],[Expr(:call,:output,:svec)])
 	ss1=stabiliseSymp(symplectic(i,j),bits)
 	if (!supressOutput) 
@@ -909,6 +890,116 @@ function generateRawCliffords()
     return straightClifford
 end
 
+function makeFromCommand(command)
+	up=[1;0]
+	down=[0;1]
+	control=[1 0; 0 0]
+	target= [0 0;0 1]
+	id=[1 0;0 1]
+	x=[0 1;1 0]
+	maxBits=1
+    currentState = [1 0 0 0;0 1 0 0;0 0 1 0;0 0 0 1]
+    si = [1 0;0 1]
+    phaseG = [1 0;0 im]
+    sphase1=kron([1 0;0 im],si)
+    sphase2=kron(si,[1 0;0 im])
+    shadamard=1/sqrt(2)*[1 1;1 -1]
+    cnot12 = [1 0 0 0;0 1 0 0;0 0 0 1;0 0 1 0]
+    cnot21 = [1 0 0 0;0 0 0 1;0 0 1 0;0 1 0 0]
+    for t in command
+        m = match(r"setup\((.*)\)",t)
+        if (m!=nothing)
+        	bit =parse(Int,(m.captures[1]))
+        	maxBits=bit
+            state = id;
+            for i=2:bit
+            	state = kron(state,id);
+            end
+            currentState = state
+        else 
+           m=match(r"phase\((.*)\)",t)
+           if (m!=nothing)
+                bit = parse(Int,(m.captures[1]))
+                tphase = phaseG
+                for i=1:bit-1
+                	tphase = kron(id,tphase)
+				end
+				for i=bit+1:maxBits
+					tphase = kron(tphase,id)
+				end
+				currentState = currentState*tphase
+            else
+                m=match(r"hadamard\((.*)\)",t)
+                if (m!=nothing)
+                    bit = parse(Int,(m.captures[1]))
+                    thad = shadamard
+                    for i=1:bit-1
+                    	thad=kron(id,thad)
+                    end
+                    for i=bit+1:maxBits
+                    	thad=kron(thad,id)
+                    end
+                    currentState=currentState*thad
+                else
+                    m=match(r"cnot\((.*),(.*)\)",t)
+                    if (m!=nothing)
+                        cbit = parse(Int,(m.captures[1]))
+                        tbit = parse(Int,(m.captures[2]))
+
+                        # just doing this each way, its easier for my mind.
+                        if cbit < tbit
+                        	startC=cbit 
+                        	endC=tbit 
+                        	l1 = id
+                        	l2  = x
+                        	for i=cbit+1:tbit-1
+                        		l1=kron(id,l1)
+                        		l2=kron(id,l2)
+                        	end
+                        	cbitbit = kron(control,l1)+kron(target,l2)
+                        else 
+                        	startC=tbit 
+                        	endC=cbit 
+                        	l1 = id
+                        	l2  = x
+                        	for i=tbit+1:cbit-1 
+                        		l1=kron(l1,id)
+                        		l2=kron(l2,id)
+                        	end
+                        	cbitbit = kron(l1,control)+kron(l2,target)
+                        end
+                        for i = 1:startC-1
+                        	cbitbit=kron(id,cbitbit)
+                        end 
+                        for i=endC+1:maxBits
+                        	cbitbit=kron(cbitbit,id)
+                        end
+                        currentState = currentState*cbitbit
+                    end
+                end
+            end
+        end
+    end
+    return  currentState=currentState
+end
 
 
+function reverseCommands(commands)
+	temp = reverse(commands)
+	len = length(commands)
+	temp[1]= commands[1]
+	temp[len]=commands[len]
+	newCommands = []
+	for i = 1:len
+		m=match(r"phase\((.*)\)",temp[i])
+		if (m!=nothing)
+			push!(newCommands,temp[i])
+			push!(newCommands,temp[i])
+			push!(newCommands,temp[i])
+        else 
+        	push!(newCommands,temp[i])
+        end
+    end
+    return newCommands
+end
 
