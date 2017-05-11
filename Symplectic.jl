@@ -595,10 +595,13 @@ end
 # into a series of cnot, hadamard and phase gates.
 # the gates are contained in text in the vector of strings, "commands"
 # and as Expressions (and thus executable in Julia) in executeCommands
+currentStateStep=0
 
 function decomposeState(state,supressOutput = false,rationalise=true)
 	global commands
 	global executeCommands
+	global currentStateStep=0
+	currentState = 0
 	commands=["output(svec)"]
 	executeCommands = append!(Expr[],[Expr(:call,:output,:svec)])
     ss1=state
@@ -607,7 +610,13 @@ function decomposeState(state,supressOutput = false,rationalise=true)
 		output(ss1);
 	end
 	while getState(ss1) < 11
+		currentStateStep=getState(ss1)
 		nextStep(ss1)
+		if getState(ss1) <= currentStateStep
+			print("Took a non-step, this is a problem.")
+			print("We were in $(currentStateStep) and then after nextStep we are in $(getState(ss1))\n")
+			return 
+		end
 	end
 	j=div(size(state)[1],2)
 	addCommand("setup($j)",Expr(:call,:setup,j))
@@ -662,6 +671,7 @@ end
 
 function nextStep(ss1)
 	currentState = getState(ss1)
+
 	if (currentState == 0)
 		getFullRank(ss1)
 	elseif currentState == 1
