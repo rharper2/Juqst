@@ -1,3 +1,12 @@
+# Note this is an altered verion of the file from 
+
+#  http://marcusps.github.com
+## Specifically from  https://github.com/BBN-Q/QuantumInfo.jl/blob/master/src/open-systems.jl
+# Original authors: Blake Johnson and Marcus da Silva
+
+## I needed to make a few changes and just did it locally. See below.
+
+
 using Cliffords
 #import Base.writemime
 import Base.show
@@ -5,7 +14,7 @@ import Base.show
 # I added a translate in the paulliou conversion functions, so that the basis was IXYZ (rather than IXZY)
 # I removed a division by d when converting from liou 2 choi (and vice versa) (slightly different conventions)
 # The choi2liou uses a different involution - keeping as column stacked.
-# (esp for 1 quibit - the X0,0 should be 1, not 0.5)
+# There is also a dimensional factor depending on which convention we use.
 
 export mat,
        liou,
