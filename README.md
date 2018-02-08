@@ -9,7 +9,7 @@
 * Draw the quantum circuit resulting from the decomposition of the clifford/unitary
 * Implement basic steps to rationalise the decomposed circuit
 * Simple brute force method to determine smallest circuit possible (runs in approximately (n*n)^(n*n) time - probably only for 3 qubits or less, or people with a serious amount of spare time)
-* Allow generation of a sub-group of Cliffords that are also a unitary 2-design [Cleve/Leung/Wang Near-linear constructions of exact unitary 2-designs arXiv:aquant-ph/1501.04592](https://arxiv.org/abs/1501.04592)
+* Allow generation of a sub-group of Cliffords that are also a unitary 2-design [Cleve/Leung/Wang Near-linear constructions of exact unitary 2-designs arXiv:quant-ph/1501.04592](https://arxiv.org/abs/1501.04592)
 
 
 ### To do:
@@ -35,7 +35,7 @@ prepares the stabiliser state for the correct number of qubits in the |000..000>
 
 The state is represented internally as a matrix of the form:
 
-<img src="Matrix.png"></img>
+<img src="readMeFigures/Matrix.png"></img>
 Aaronson/Gottesman arXiv:quant-ph/0406196
 
 Currently I am just using Int32 Arrays, although binary arrays would save space (if it ever becomes necessary).
@@ -79,7 +79,7 @@ The idea behind this paper is that we can implement a one-to-one mapping between
 
 The mapping is as follows:
 
-<img src="Clifford Mapping.png">Koenig/Smolin arXiv:quant-ph/1406.2170</img>
+<img src="readMeFigures/Clifford Mapping.png">Koenig/Smolin arXiv:quant-ph/1406.2170</img>
 
 We can generate the alpha,beta,gamma and delta via
 
@@ -87,7 +87,7 @@ We can generate the alpha,beta,gamma and delta via
 
 Which returns the nxn arrays (alpha->delta) coded as follows:
 
-<img src="coding.png">Koenig/Smolin arXiv:quant-ph/1406.2170</img>
+<img src="readMeFigures/coding.png">Koenig/Smolin arXiv:quant-ph/1406.2170</img>
 
 More usefully these can be placed into a stabiliser tableau (that is the equivlent of passing the state |0000> through a gate that implements the unitary in question as follows:
 
