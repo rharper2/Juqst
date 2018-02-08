@@ -1,7 +1,7 @@
 # Juqst: JUlia Quantum Simulator Toolbox
-##Beginning of a quantum simulator toolbox, primarily written in the Julia Language
+## Beginning of a quantum simulator toolbox, primarily written in the Julia Language
 
-###Done:
+### Done:
 
 * Implement the simulation of Stabiliser Circuits [Aaronson/Gottesman arXiv:quant-ph/0406196](http://arxiv.org/pdf/quant-ph/0406196)
 * Implement ability to select an arbitrary Clifford group element [Koenig/Smolin arXiv:quant-ph/1406.2170](http://arxiv.org/abs/1406.2170)
@@ -12,7 +12,7 @@
 * Allow generation of a sub-group of Cliffords that are also a unitary 2-design [Cleve/Leung/Wang Near-linear constructions of exact unitary 2-designs arXiv:aquant-ph/1501.04592](https://arxiv.org/abs/1501.04592)
 
 
-###To do:
+### To do:
 
 - document randomised benchmarking from arbitrary designs
 - document random single noise channel generation
