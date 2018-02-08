@@ -9,37 +9,20 @@
 * Draw the quantum circuit resulting from the decomposition of the clifford/unitary
 * Implement basic steps to rationalise the decomposed circuit
 * Simple brute force method to determine smallest circuit possible (runs in approximately (n*n)^(n*n) time - probably only for 3 qubits or less, or people with a serious amount of spare time)
+* Allow generation of a sub-group of Cliffords that are also a unitary 2-design [Cleve/Leung/Wang Near-linear constructions of exact unitary 2-designs arXiv:aquant-ph/1501.04592](https://arxiv.org/abs/1501.04592)
 
-###Working on:
-
-- Shadow the stabiliser state with the exact density matrix representing the state (the **"base representation"**)
-- Integrate earlier work pre-defining the steane code generators and logical operators, allowing an arbitrary qubit to be projected into a steane code stabilised state.
 
 ###To do:
 
-- randomised benchmarking from arbitrary cliffords
-- introduce the ability to add noise at the level of the "base representation" as well as in the stabilised state
-- explore noisy quantum channels
-- integrate tomography work
-- optimise the clifford compiler in sub-exponential time
+- document randomised benchmarking from arbitrary designs
+- document random single noise channel generation
 
 # To install
 
-This has been developed on Julia 3.5. Currently there are two files that need to be loaded.
+This has been updated to Julia 0.6.2.
 
-The current workbook which shows a number of examples is the "A stabiliser run through" workbook. It is probably worth running that one early.
+The exampleNotebooks directory contains, suprisingly enough, some sample notebooks that show how to work this. They assume IJulia. The one that shows how to use the Stabiliser mechanisms and plotting functions is called "A stabiliser run through". It is probably worth running that one early.
 
-Move to the directory containing these files 
-
-    cd("juqst")
-
-Then 
-
-    require("Initial.jl")
-
-and 
-
-    require("Symplectic.jl")
 
 
 # Sample use
@@ -86,7 +69,7 @@ Output of the resultant state can be supressed by adding an extra false paramete
     hadamard(state,qubit,false) # hadamard as before, but supress output
 
 **NOTE! that these commands alter the state passed into them. I have broken Julia convention which requires functions 
-with side effects to be written thus - hadamard!(state,qubit).**
+with side effects to be written thus - hadamard!(state,qubit), rather hadamard!(qubit) alters a globally defined variable, called state.**
 
 ## Arbitrary cliffords
 
@@ -136,37 +119,8 @@ The commands are also stored as Julia code in the vector executeCommands (so you
 
 This is a bit more involved, just now I am using IJulia to provide the rich notebook needed to see the circuit.
 
-To install IJulia, full instructions can be found here: https://github.com/JuliaLang/IJulia.jl but the summary is this
+To install IJulia, full instructions can be found here: https://github.com/JuliaLang/IJulia.jl. Note that if you haven't yet installed PyCall and Conda - you might want to consider going straight to Python 3 (at the time of writing it defaults to Python 2). Check out the Working with Python notebook in the exampleNotebook directory.
 
-- You need to have installed ipython, simplest way to do this is install pip if you haven't already and then
-
-     sudo pip install ipython[all]
-
-You might also want to install scipy and numpy whilst you are at it, I am going to use them sometime (fer sure)
-
-- Then from within julia 
-
-    Pkg.add("IJulia")
-
-  If there are any errors fix it and Pkg.build("IJulia") until it builds (it will!)
-
-````
-  using IJulia
-  notebook()
-````
-gets it up and running.
-
-You will also need from within Julia to add the ImageView package Pkg.add("ImageView")
-
-Here is a sample IJulia session showing how to use the new drawcircuit functionality. This might be out of date, use the stabiliser run through notebook in preference.
-
-[IJulia example notebook](http://rharper2.github.io/Juqst/Example%20of%20Draw%20Circuit.html)
-
-Another example book showing how to use the new "rationalise" and bruteForce methods [Minimise Gates](http://rharper2.github.io/Juqst/minimiseGates.html)
-
-    getState(state) 
-
-Is a simple funciton that returns the state the tableau is in vis-a-vis the Aarosnon/Gottesman decomposition algorithm.
 
 
 
