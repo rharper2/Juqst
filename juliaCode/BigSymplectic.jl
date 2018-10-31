@@ -42,15 +42,18 @@
 
 # This just shows how big the groups get, Julia overflow is going to be a problem
 function getNumberOfCliffords(n)
+	n = BigInt(n)
 	return 2^(n^2+2*n)*prod([4^x-1 for x =1:n])
 end
 
 # This returns the number without taking into account +/- stuff
 function getNumberOfSymplecticCliffords(n)
+	n=BigInt(n)
 	return 2^(n^2)*prod([4^x-1 for x =1:n])
 end
 
 function getNumberOfBitStringsCliffords(n)
+	n=BigInt(n)
 	return 2^(2*n)
 end
 
@@ -180,7 +183,7 @@ function symplectic(i,n)
 	nn=2*n
 	s=((1<<nn)-1)
 	k=(i%s)+1
-	i=floor(Int,(i/s))
+	i=round(Int,(i/s))
 	# step 2
 	f1=int2bits(k,nn)
 	#step 3
@@ -228,88 +231,6 @@ function symplectic(i,n)
 	return g
 end
 
-function numberofcosets(n)
-	x = 2^(2*n-1)*(2^(2*n)-1)
-	return x
-end
-
-function bits2int(b,nn)
-	output = 0
-	tmp = 1
-	for j in 1:nn
-		if b[j]==1
-			output = output + tmp
-		end
-		tmp = tmp*2
-	end
-	return output
-end
-
-function symplecticinverse(gn)
-	n = round(Int,size(gn)[1]/2)
-	nn=2*n
-
-	# step 1
-
-	v = gn[1,:]
-	w = gn[2,:]
-
-	# step 2
-
-	e1 = zeros(nn)
-	e1[1] = 1
-	T = findtransvection(v,e1)
-
-	# step 3
-	tw = copy(w)
-	tw = transvection(T[1,:],tw)
-	tw = transvection(T[2,:],tw)
-	b = tw[1]
-	h0 = zeros(nn)
-	h0[1]=1
-	h0[2]=0
-	for j in 3:nn
-		h0[j]=tw[j]
-	end
-
-	# step 4
-
-	bb = zeros(nn-1)
-	bb[1]=b
-	for j in 3:nn
-		bb[j-1] = tw[j]
-	end
-
-	zv = bits2int(v,nn)-1
-	zw = bits2int(bb,nn-1)
-
-	cvw = zw*(2^(2*n)-1)+zv
-
-	if n == 1
-		return cvw
-	end
-
-	gprime = copy(gn)
-	if b == 0
-		for j in 1:nn
-			gprime[j,:] = transvection(T[2,:],transvection(T[1,:],gn[j,:]))
-			gprime[j,:] = transvection(h0,gprime[j,:])
-			gprime[j,:] = transvection(e1,gprime[j,:])
-		end
-	else
-		for j in 1:nn
-			gprime[j,:]=transvection(T[2,:],transvection(T[1,:],gn[j,:]))
-			gprime[j,:]=transvection(h0,gprime[j,:])
-
-		end
-	end
-	gnew = gprime[3:nn,3:nn]
-	gnidx = symplecticinverse(gnew)*numberofcosets(n)+cvw
-	return gnidx
-end
-
-
-
 
 #Splits up the symplectic into the alpha,beta,gamma and delta arrays that 
 #specify the action of the clifford unitary on the X and Z Paulis respectively
@@ -334,11 +255,6 @@ function parseSymplectic(symp)
 	end
 	return (a,b,c,d)
 end
-
-
-
-
-
 
 # Takes the symplectic, parses it and uses it to create an Aaronson/Gottesman tableau
 #The bits specify the 'bit' pattern that controls the sign
@@ -374,7 +290,7 @@ function getState(state)
 	# C | D
 	#
 	n=div(size(state,1),2) # half the dimension of this 2n x (2n+1) matrix
-	state_i = Matrix{Int32}(I,n,n)
+	state_i = eye(Int32,n)
 	state_z = zeros(Int32,n,n)
 	state_r = zeros(Int32,n,1)
 	if (as==vcat(hcat(state_i,state_z,state_r),hcat(state_z,state_i,state_r)))
@@ -419,28 +335,25 @@ end
 
 function getFullRank(svec)
 	n=div(size(svec,1),2) # half the dimension of this 2n x (2n+1) matrix
-	for ii=1:n
-		for i=1:n
-			r1 = rank(svec[n+1:2*n,1:n]) 
-			if r1 == n 
-				return
-			end
-			hadamard(svec,i,false)
-			r2 = rank(svec[n+1:2*n,1:n])
-			if (r2 == n )
-				#println("hadamard(",i,")")
-				addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
-				return
-			end
-			if (r2 > r1) 
-				#println("hadamard(",i,")",Expr(:call,:hadamard,:svec,i))
-				addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
-				continue
-			else
-				hadamard(svec,i,false)
-			end
+	for i=1:n
+		r1 = rank(svec[n+1:2*n,1:n]) 
+		if r1 == n 
+			return
 		end
-		hadamard(svec,ii,false)
+		hadamard(svec,i,false)
+		r2 = rank(svec[n+1:2*n,1:n])
+		if (r2 == n )
+			#println("hadamard(",i,")")
+			addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
+			return
+		end
+		if (r2 > r1) 
+			#println("hadamard(",i,")",Expr(:call,:hadamard,:svec,i))
+			addCommand("hadamard($i)",Expr(:call,:hadamard,:svec,i))
+			continue
+		else
+			hadamard(svec,i,false)
+		end
 	end
 end
 
@@ -681,7 +594,7 @@ function decomposeState(state,supressOutput = false,rationalise=true)
 	end
 	j=div(size(state)[1],2)
 	addCommand("setup($j)",Expr(:call,:setup,j))
-	(commands,executeCommands) = reverseCommands(commands,executeCommands)
+	reverse!(commands)
 	if rationalise==true
 		removeRedundancy(j)
 	end
@@ -700,7 +613,7 @@ end
 # the gates are contained in text in the vector of strings, "commands"
 # and as Expressions (and thus executable in Julia) in executeCommands
 
-function decompose(i,bits,j=4,supressOutput = true,rationalise=true)
+function decompose(i,bits,j=4,supressOutput = false,rationalise=true)
 	global commands
 	global executeCommands
 	commands=["output(state)"]
@@ -714,7 +627,7 @@ function decompose(i,bits,j=4,supressOutput = true,rationalise=true)
 		nextStep(ss1)
 	end
 	addCommand("setup($j)",Expr(:call,:setup,i))
-	(commands,executeCommands) = reverseCommands(commands,executeCommands)
+	reverse!(commands)
 	if rationalise==true
 		removeRedundancy(j)
 	end
@@ -732,7 +645,6 @@ end
 
 function nextStep(ss1)
 	currentState = getState(ss1)
-	#print(currentState)
 	if (currentState == 0)
 		getFullRank(ss1)
 	elseif currentState == 1
@@ -970,7 +882,7 @@ function generateRawCliffords()
                     	if (m!=nothing)
                         	state=state*shadmard
                     	else
-                        	push!(straightClifford,round.(state,digits=10))
+                        	push!(straightClifford,round.(state,10))
                     	end
                 	end
             	end
@@ -988,9 +900,9 @@ function drawCircuit()
 	for i = 1:size(commands,1)
 		m = match(r"setup\((.*)\)",commands[i])
 		if (m!=nothing)
-			for idx=1:Meta.parse(m.captures[1])
+			for i=1:parse(m.captures[1])
     			#push!(qasmCommands,"qubit q$i")
-                push!(labels,"q$idx")
+                push!(labels,"q$i")
 			end
     	else
     		m=match(r"hadamard\((.*)\)",commands[i])
@@ -1104,53 +1016,26 @@ function makeFromCommand(command)
             end
         end
     end
-    return  currentState
+    return  currentState=currentState
 end
 
 
-function reverseCommands(commands,execute)
+function reverseCommands(commands)
+	temp = reverse(commands)
 	len = length(commands)
-	@assert length(executeCommands)==len
+	temp[1]= commands[1]
+	temp[len]=commands[len]
 	newCommands = []
-	newExecute  = []
-	for i = len:-1:1
-		m=match(r"phase\((.*)\)",commands[i])
+	for i = 1:len
+		m=match(r"phase\((.*)\)",temp[i])
 		if (m!=nothing)
-			push!(newCommands,commands[i])
-			push!(newCommands,commands[i])
-			push!(newCommands,commands[i])
-			push!(newExecute,execute[i])
-			push!(newExecute,execute[i])
-			push!(newExecute,execute[i])
+			push!(newCommands,temp[i])
+			push!(newCommands,temp[i])
+			push!(newCommands,temp[i])
         else 
-        	push!(newCommands,commands[i])
-			push!(newExecute,execute[i])
+        	push!(newCommands,temp[i])
         end
     end
-    return (newCommands,newExecute)
+    return newCommands
 end
 
-
-function decomposeStateToαβγδ(state)
-    n = size(state)[1]
-    boundary = round(Int,n/2)
-    return (state[1:boundary,1:boundary],state[1:boundary,boundary+1:end],
-        state[boundary+1:end,1:boundary],state[boundary+1:end,boundary+1:end])
-end
-
-
-function decomposeStateToSymplectic(state)
-    n = round(Int,size(state)[1]/2)
-    nn = n*2
-    sympy=zeros(nn,nn)
-    (α,β,γ,δ)= decomposeStateToαβγδ(state)
-    for i=1:n
-        for j = 1:n
-            sympy[(i-1)*2+1,(j-1)*2+1]= α[i,j]
-            sympy[(i-1)*2+1,j*2]=β[i,j]
-            sympy[i*2,(j-1)*2+1]= γ[i,j]
-            sympy[i*2,j*2]= δ[i,j]
-        end
-    end
-    return sympy
-end

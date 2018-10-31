@@ -1,4 +1,11 @@
+"""
+    Some functions to implement the cliffords used in 
+    Investigating the limits of randomized benchmarking protocols - Jeffrey M. Epstein, Andrew W. Cross, Easwar Magesan, Jay M. Gambetta
+    Arxiv: 1308.2928
 
+    Effectively: Pauli-Liouville superoperators for the single qubit cliffords with arbitary rotational noise on the x/y generators.
+
+"""
 function xtheta( angle )
 #returns the PTSM representation for X rotation of angle
 #   Returns 

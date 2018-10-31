@@ -1,0 +1,18 @@
+#!/bin/bash
+#PBS -q defaultQ
+#PBS -N RealCliffords
+#PBS -j oe
+#PBS -P RDS-FSC-4qrb-RW
+#PBS -l nodes=1:ppn=1
+#PBS -l walltime=20:00:00 
+#PBS -l mem=4GB
+#PBS -m ea
+#PBS -M robin.harper@sydney.edu.au
+#PBS -V
+#PBS -J 0-144 
+#PBS -o "realc.txt_^array_index^" 
+cd "/project/RDS-FSC-4qrb-RW"
+#your commands/programs start here, for example:
+module load julia
+julia createArtemis3.jl ${PBS_ARRAY_INDEX} 10 
+exit

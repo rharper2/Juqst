@@ -43,11 +43,10 @@ export mat,
        writemime
 
 mat( v::Vector, r=round(Int,sqrt(length(v))), c=round(Int,sqrt(length(v))) ) = reshape( v, r, c )
-
-liou( left::T, right::T ) where T<:AbstractMatrix = kron( transpose(right), left )
+liou{T<:AbstractMatrix}( left::T, right::T ) = kron( transpose(right), left )
 
 ## So conj, which equals transpose(m'), ie the liou of m is based on := m \rho m' = kron(conj(m),m) * vec(\rho)
-liou( m::T ) where T<:AbstractMatrix = kron( conj(m), m )
+liou{T<:AbstractMatrix}( m::T ) = kron( conj(m), m )
 
 
 # This violates a large number of programming principles, esp no repetition, but it should be clear.
@@ -187,27 +186,25 @@ function choiX2liou(r::Matrix)
 end
 
 # This stays the same, save that we need to take into account dimensional factors. 
-# Note slight negative eigenvalue (roundeing can cause problems). Here I round to 15 digits.
-function choi2kraus(r::Matrix{T}) where T
+function choi2kraus{T}( r::Matrix{T}  )
   d = sqrt(size(r,1))
-  (vals,vecs) = eigen( d*r )
+  (vals,vecs) = eig( d*r )
   #vals = eigvals( sqrt(size(r,1))*r )
   kraus_ops = Matrix{T}[]
   for i in 1:length(vals)
-    push!(kraus_ops, sqrt(round(vals[i],digits=15,RoundToZero))*mat(vecs[:,i]))
+    push!(kraus_ops, sqrt(vals[i])*mat(vecs[:,i]))
   end
-  factor = tr(sum([k'*k for k in kraus_ops]))
+  factor = trace(sum([k'*k for k in kraus_ops]))
   kraus_ops = kraus_ops/sqrt(factor/d)
   kraus_ops
 end
 
 
 
-function kraus2liou( k::Vector{Matrix{T}}) where T
+function kraus2liou{T}( k::Vector{Matrix{T}} )
   l = zeros(T,map(x->x^2,size(k[1])))
   for i in 1:length(k)
-    # The Adjoint is now lazy, so we need to copy it.
-    l = l + liou(k[i],copy(k[i]'))
+    l = l + liou(k[i],k[i]')
   end
   l
 end
@@ -216,7 +213,7 @@ function liou2kraus( l::Matrix )
   choi2kraus( liou2choi( l ) )
 end
 
-function kraus2choi(k::Vector{Matrix{T}} ) where T
+function kraus2choi{T}( k::Vector{Matrix{T}} )
   liou2choi(kraus2liou(k))
   # Seems to fail for some kraus vectors.
   #c = zeros(T,map(x->x^2,size(k[1])))
@@ -227,11 +224,11 @@ function kraus2choi(k::Vector{Matrix{T}} ) where T
 end
 
 
-_translate(v) = [x==2 ? 3 : x== 3 ? 2 : x for x in v] 
+_translate(v) = [x==2?3:x==3?2:x for x in v] 
 
 _Paulis = [ [1 0im;0 1],[0im 1;1 0],[0 -im;im 0],[1 0im;0 -1]]
 
-_num2quat(n,l) = map(s->parse(Int,s),collect(string(n,base=4,pad=l)))
+_num2quat(n,l) = map(s->parse(Int,s),collect(base(4,n,l)))
 
 _toPauli(p) = reduce(kron,[_Paulis[x+1] for x in p])
 
@@ -242,7 +239,7 @@ function pauliliou2liou( m::Matrix )
     error("Only matrices with dimension 4^n supported.")
   end
   dsq = size(m,1)
-  res = zeros(ComplexF64,size(m))
+  res = zeros(Complex128,size(m))
   l = round(Int,log2(dsq)/2)
   for i=1:dsq
     for j=1:dsq
@@ -254,14 +251,14 @@ end
 
 
 
-function liou2pauliliou( m::Matrix{T} ) where T
+function liou2pauliliou{T}( m::Matrix{T} )
   if size(m,1) != size(m,2)
     error("Only square matrices supported")
   elseif size(m,1) != 4^(floor(log2(size(m,1))/2))
     error("Only matrices with dimension 4^n supported.")
   end
   dsq = size(m,1)
-  res = zeros(ComplexF64,size(m))
+  res = zeros(Complex128,size(m))
   l = round(Int,log2(dsq)/2)
   for i=1:dsq
     for j=1:dsq
@@ -278,7 +275,7 @@ end
 # So for instance
 # (0 -im//im 0) vectorises as (0 -im im 0) (unlike column used elsewhere where its (0 im -im 0))
 
-function choi2chi( m::Matrix{T} ) where T
+function choi2chi{T}( m::Matrix{T} )
   if size(m,1) != size(m,2)
     error("Only square matrices supported")
   elseif size(m,1) != 4^(floor(log2(size(m,1))/2))
@@ -289,28 +286,28 @@ function choi2chi( m::Matrix{T} ) where T
   dim = round(Int(log2(dsq)/2))
   pauliTranslate=vec(_toPauli(_num2quat(0,dim)))
   for i = 2:dsq
-    pauliTranslate=hcat(pauliTranslate,vec(transpose(_toPauli(_num2quat(i-1,dim)))))
+    pauliTranslate=hcat(pauliTranslate,vec(_toPauli(_num2quat(i-1,dim)).'))
   end
   pauliTranslate'*m*pauliTranslate
 end
 
-function pauliliou2chi( m::Matrix{T}) where T
+function pauliliou2chi{T}( m::Matrix{T})
   choi2chi(liou2choi(pauliliou2liou(m)))
 end
 
-#"""
-#Returns a superoperator that replaces the input with a maximally
-#mixed state with probability p, and leaves it unchanged with probability (1-p).
-#"""
-#function depol( d::Int, p=1.0 )
-#  choi2liou( p * Matrix(I,d^2,d^2)/d^2 + (1-p) * projector(_max_entangled_state(d)) )
-#end
+"""
+Returns a superoperator that replaces the input with a maximally
+mixed state with probability p, and leaves it unchanged with probability (1-p).
+"""
+function depol( d::Int, p=1.0 )
+  choi2liou( p * eye(d^2)/d^2 + (1-p) * projector(_max_entangled_state(d)) )
+end
 
 """
 Given a superoperator, it extracts the closest superoperator (in Frobenius norm)
 that is unital. The result may not be completely positive.
 """
-function unitalproj( m::Matrix{T} ) where T
+function unitalproj{T}( m::Matrix{T} )
   d2 = size(m,1)
   d  = round(Int,sqrt(d2))
   id = projector(normalize(vec(eye(d))))

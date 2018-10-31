@@ -20,7 +20,7 @@
 # Note that this isn't quite in accord with Julia syntax since we still alter the supplied state
 # But there you go.
 
-using LinearAlgebra
+
 
 function setup!(n)
   global state
@@ -52,8 +52,8 @@ function setup(n)
   #  .      \     .  |  .        \      . |  .
   # x(2n)1   \x(2n)n | z(2n)1     \ z(2n)n| r(2n)
   
-  top = hcat(Matrix{Int32}(I,n,n),zeros(Int32,n,n),zeros(Int32,n,1))
-  bottom = hcat(zeros(Int32,n,n),Matrix{Int32}(I,n,n),zeros(Int32,n,1))
+  top = hcat(eye(Int32,n),zeros(Int32,n,n),zeros(Int32,n,1))
+  bottom = hcat(zeros(Int32,n,n),eye(Int32,n),zeros(Int32,n,1))
   state = vcat(top,bottom)
 end
 
@@ -252,12 +252,6 @@ end
 
 
 function rowsum(state,h,i)
-  # Irritatingly enough this is another example of Aaronson's paper flitting between r's being stored as 1 or 0
-  # And his implementation where he stores them as the power to take i to. (we get another example of this biting us
-  # in the stuff related to geting the Output states.
-  # Like there, I haven't the inclination to change everything and so I'll just multiple the total buy two and 
-  # hope it works.
-
   # "sums" two rows in the state matrix
   # pass in integers to the rows, not the rows themselves.
   n=div(size(state,1),2)
@@ -271,7 +265,7 @@ function rowsum(state,h,i)
   end
   rh=state[h,2*n+1]
   ri=state[i,2*n+1]
-  grandTotal=2*rh+2*ri+2*total
+  grandTotal=2*rh+2*ri+total
   if mod(grandTotal,4) == 0
 	state[h,2*n+1]=0
   elseif mod(grandTotal,4) == 2
@@ -307,7 +301,7 @@ function measure(state,a)
  # print("$(aSlice)\n$(aSlice[:,a])\n")
   if sum(aSlice[:,a]) > 0 
 	   # we have a one on the xia somewhere. This makes it a random measuremnt. 
-  	p = n+argmax(aSlice[:,a]); # first one will do
+  	p = n+indmax(aSlice[:,a]); # first one will do
 	  # print("Random first x row is ",p,"\n\n")
   	# First rowsum(state,i,p) for all i 1..2n where i!=p and xia =1
    	for h=1:2n # h is what we use in rowsum, i is p in rowsum 
@@ -319,11 +313,12 @@ function measure(state,a)
 	  state[p-n,:]=state[p,:]
     # Third step set pth row to be 0, except rp = 0 or 1 and zpa = 1
 	  value = round.(Integer,rand()) # check distribution
+	  state[p,endC]=value
 	  state[p,:]=zeros(2*n+1)
 	  state[p,endC]=value
 	  state[p,n+a]=1
-    # output(state)
-	  # print("\n")
+   # output(state)
+	 # print("\n")
     return value
   else
       # print("Deterministic\n\n")
@@ -411,7 +406,7 @@ function rowmult!(alteredState,i,k) # does the multiplication in place in a stat
   # For the purpose of the *tableau* we only need to record an r which is 0 or 1 (in place 2*n+1)
   # And so rather than allow it four values, the software was coded using a 0 or 1
   # This makes matching the stuff on page 4 column 2 to the code (imo) easier, it directly matches the maths.
-  # HOWEVER, when printing out the basis (getStatesFor) we need all four possible states +1,i,-1,-i
+  # HOWEVER, when pritinging out the basis (getStatesFor) we need all four possible states +1,i,-1,-i
   # So we can't just divide the Clifford phase by 2.
   # All the syplectic stuff built on top of this assumes r = 0 or 1, so I don't want to revert to the Aaronson code
   # which has r ranging from 0->3 (and divides by 2 normally)
@@ -482,11 +477,10 @@ function gaussianElimination(state)
   for j=1:n
     found = 0;
   
-    for kidx=i:2*n
+    for k=i:2*n
       # Find a generator containing X in the jth column
-      if alteredState[kidx,j] == 1
+      if alteredState[k,j] == 1
         found = 1
-        k = kidx
         break
       end
     end
@@ -519,9 +513,8 @@ function gaussianElimination(state)
   # The first gen generators are X/Ys and in quasi upper triangular form.
   for j=1:n
     found = 0
-    for kidx=i:2*n
-      if alteredState[kidx,n+j] == 1 # we have found a Z in the jth bit
-        k = kidx
+    for k=i:2*n
+      if alteredState[k,n+j] == 1 # we have found a Z in the jth bit
         found = 1
         break
       end

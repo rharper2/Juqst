@@ -1,7 +1,7 @@
 using PyCall
 using PyPlot
-unshift!(PyVector(pyimport("sys")["path"]), "./PlotQCircuit/")
-unshift!(PyVector(pyimport("sys")["path"]), "../PlotQCircuit/")
+pushfirst!(PyVector(pyimport("sys")["path"]), "./PlotQCircuit/")
+pushfirst!(PyVector(pyimport("sys")["path"]), "../PlotQCircuit/")
 @pyimport plot_quantum_circuit as pqc
 
 
