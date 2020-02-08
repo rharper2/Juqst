@@ -53,8 +53,8 @@ liou( m::T ) where T<:AbstractMatrix = kron( conj(m), m )
 # This violates a large number of programming principles, esp no repetition, but it should be clear.
 # The purpose behind the repl style dots is in case you mistakenly try and print say a 1000x1000 Matrix
 # At least on my computer this would hang Jupyter.
-function nicePrint(m)
-  start = string("\\begin{equation*} \\left(\\begin{array}{*{11}c}")
+function latexArray(m)
+  start = string("\\left(\\begin{array}{*{11}c}")
   if ndims(m) == 2
       (a,b) = size(m)
       if b > 20
@@ -88,7 +88,7 @@ function nicePrint(m)
               end
               start= "$start \\\\"
             end
-            start = "$start \\end{array}\\right)\\\\\\end{equation*}"
+            start = "$start \\end{array}\\right)"
  
         else # a < 20 b > 20
             for i = 1:a
@@ -105,7 +105,7 @@ function nicePrint(m)
               end
               start= "$start \\\\"
             end
-            start = "$start \\end{array}\\right)\\\\\\end{equation*}"
+            start = "$start \\end{array}\\right)"
          end
       else 
         if a > 20 # b < 20
@@ -127,7 +127,7 @@ function nicePrint(m)
               end
               start= "$start \\\\"
             end
-            start = "$start \\end{array}\\right)\\\\\\end{equation*}"
+            start = "$start \\end{array}\\right)"
         else 
         for i = 1:size(m,1)
           for j = 1:size(m,2)
@@ -135,12 +135,21 @@ function nicePrint(m)
           end
           start= "$start \\\\"
         end
-        start = "$start \\end{array}\\right)\\\\\\end{equation*}"
+        start = "$start \\end{array}\\right)"
       end
     end
     return start
   end 
   return "NOT A MATRIX?" 
+end 
+
+
+
+function nicePrint(m)
+  start = string("\\begin{equation*} ")
+  start = start*latexArray(m)
+  start = start*string("\\\\\\end{equation*}")
+  return start
 end
 
 show(stream, ::MIME"text/latex", x::AbstractMatrix) = write(stream, nicePrint(x)) 

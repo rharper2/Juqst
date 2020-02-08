@@ -100,6 +100,8 @@ function genSigma(min,max,average,sigma)
     λ1=genTruncated(min,max,average,sigma,_d)
     λ2=genTruncated(min,max,average,sigma,_d)
     λ3=genTruncated(min,max,average,sigma,_d)
+    # In order to CP the eigenvalues have to obey certain relations.
+    # Keep generating random values until they do so.
     while 1+λ3 < abs(λ1+λ2) || 1-λ3 < abs(λ2-λ1) 
         λ3=genTruncated(min,max,average,sigma,_d)
     end

@@ -19,12 +19,11 @@ using LinearAlgebra
 
 #generateClifford actually allows gate dep errors to be applied, but not doing just now.
 
-superCliffords = Array{Float64,2}[round.(generateClifford(i,0,0,0),digits = 5) for i=1:24];
 operatorCliffords = generateRawCliffords();
 
-function makeSuper(u)
-    return round.(real(liou2pauliliou(liou(u))),digits=10)
-end
+
+superCliffords = map(makeSuper,operatorCliffords)
+
 
 # Just some convenience functions
 operatorPaulis= Array{Complex{Float64},2}[[1 0;0 1], [0 1;1 0],[0 -im;im 0], [1 0;0 -1]];
@@ -68,30 +67,16 @@ end
 
 
 
-gx=exp(im*π*operatorPaulis[2]/4)
+gx=exp(-im*π*operatorPaulis[2]/4)
 Gx=makeSuper(gx)
-gy=exp(im*π*operatorPaulis[3]/4)
+gy=exp(-im*π*operatorPaulis[3]/4)
 Gy=makeSuper(gy)
-mgx=exp(-im*π*operatorPaulis[2]/4)
+mgx=exp(im*π*operatorPaulis[2]/4)
 mGx=makeSuper(mgx)
-mgy=exp(-im*π*operatorPaulis[3]/4)
+mgy=exp(im*π*operatorPaulis[3]/4)
 mGy=makeSuper(mgy)
 
 
-# My supeoperators are not in the same order as the 'operator' cliffords 
-# reorder them.
-reorderedSCliffords = copy(operatorCliffords)
-for i=1:24
-    superNo = findClifford(makeSuper(operatorCliffords[i]));
-    reorderedSCliffords[superNo] = operatorCliffords[i]
-end
-
-for i=1:24
-    @assert makeSuper(reorderedSCliffords[i])==superCliffords[i]
-end
-#print("Sanity check - Ok\n")
-
-operatorCliffords=reorderedSCliffords;
 
 #This is our set of Generators (note I included the I)
 twoGenSet=[]
@@ -255,6 +240,29 @@ function genAFaulty4RotateClifford(x,noiseRotation)
     end
     return start
 end 
+
+function genAFaulty4RotateClifford(x,noiseRotation::Array{Array{Float64,2},1})
+    generator = min4Gens[x]
+    start = superCliffords[24] # Identity
+    for i in generator
+        if i!=1 # Identity
+            start = start*fourGen[i]*noiseRotation[i]
+        end
+    end
+    return start
+end 
+
+function genA4RotateClifford(x)
+    generator = min4Gens[x]
+    start = superCliffords[24] # Identity
+    for i in generator
+        if i!=1 # Identity
+            start = start*fourGen[i]
+        end
+    end
+    return start
+end
+
 
 #Note the type of the noise here, so I don't mess up and pass in the PTSM noise
 

@@ -62,45 +62,45 @@ function extractLRD(expectedGates,noisyGates) # the documentation is perfectGate
 	Expect2 = mean([transpose(kron(noisyGates[i],Gu[i])) for i=1:numberOfGates])
 	ExpectG = mean(noisyGates)
 	# We need the left hand eigenvector
-	ExpectGT = ExpectG'
+	ExpectGT = collect(ExpectG')
 
-	eig1=eigfact(Expect1)
-	eig2=eigfact(Expect2)
-	eig3=eigfact(ExpectG)
-	eig4=eigfact(ExpectGT)
+	eig1=eigen(Expect1)
+	eig2=eigen(Expect2)
+	eig3=eigen(ExpectG)
+	eig4=eigen(ExpectGT)
 
 	# So repectively these are the L', R', L and R values (17b,17d,17a,17c of Joel's paper.)
-	Lp_position = findmax(abs.(eig1[:values]))[2]
-	Rp_position = findmax(abs.(eig2[:values]))[2]
-	M1_position = findmax(abs.(eig3[:values]))[2]
-	M2_position = findmax(abs.(eig4[:values]))[2]
+	Lp_position = findmax(abs.(eig1.values))[2]
+	Rp_position = findmax(abs.(eig2.values))[2]
+	M1_position = findmax(abs.(eig3.values))[2]
+	M2_position = findmax(abs.(eig4.values))[2]
 
-	Lp=eig1[:vectors][:,Lp_position]
-	Rp=eig2[:vectors][:,Rp_position]
-	M1=eig3[:vectors][:,M1_position]
-	M2=transpose(eig4[:vectors][:,M2_position])
+	Lp=eig1.vectors[:,Lp_position]
+	Rp=eig2.vectors[:,Rp_position]
+	M1=eig3.vectors[:,M1_position]
+	M2=transpose(eig4.vectors[:,M2_position])
 
 	# The p's - before we rescale to make them equal.
-	LV=eig1[:values][Lp_position]
-	RV=eig2[:values][Rp_position]
+	LV=eig1.values[Lp_position]
+	RV=eig2.values[Rp_position]
 
-	MV1=eig3[:values][M1_position]
-	MV2=eig4[:values][M2_position]
+	MV1=eig3.values[M1_position]
+	MV2=eig4.values[M2_position]
 
 
 	Lprime = reshape(Lp,dsq,dsq)
 	Rprime = reshape(Rp,dsq,dsq)
-	assert(isapprox(LV,RV))
+    @assert(isapprox(LV,RV))
 
-	Rscaled=(dsq-1)*RV/trace(Lprime*Rprime)*Rprime
+	Rscaled=(dsq-1)*RV/tr(Lprime*Rprime)*Rprime
 	η1=MV1/(M1[1])
 	η2=MV2/(M2[1])
 
 	finalR = η2*B1*M2+Rscaled
 	finalL = η1*M1*B1'+Lprime
 	deltaG=[expectedGates[i]'*finalR*(noisyGates[i]-(finalL*expectedGates[i]*finalR)) for i=1:numberOfGates];
-	if !(isapprox(round(sum(abs.(mean(deltaG))),6),0))
-		print("Warning, check deltaG values\n")
+	if !(isapprox(round(sum(abs.(mean(deltaG))),digits=6),0))
+		@warn "Warning, check deltaG values\n"
 	end
 	return (finalL,finalR,deltaG)
 end

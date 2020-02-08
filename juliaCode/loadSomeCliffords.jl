@@ -139,139 +139,15 @@ catch
     print("2 of 3, all two qubit real cliffords indexed in.\n")
 end
 
-# This bit is directory dependent - should think about it
-
-pushfirst!(PyVector(pyimport("sys")."path"), "./finite-fields/")
-ff = pyimport("finitefield")
-
-F22 = ff.FiniteField(2,2)
-
-sl = pyimport("SLFunctions")
-
-
-function getStabilisers()
-    jstabs=Array{Int64,2}[]
-    stabs = sl.getF2Stabilisers()
-    for i in 1:60
-        push!(jstabs,reshape(stabs[i,:,:],4,4))
-    end
-    return jstabs
-end
-
-stabs=getStabilisers();
-
-
-#since we saved them previously we can load them
-gates=Array{Float64}[]
-for i=1:60
-    push!(gates,readdlm("./compiledGates/gateList$i.csv"))
-end
-
-gates[29]=[7.0] # This is the identity gate, it was saved wrong
-
-
-gatesCommand = (Expr)[]
-	svec = []
-	for i = 1:2
-	  for j = 1:2
-	  	if i!=j
-            push!(gatesCommand,Expr(:call,:cnot,:svec,i,j,false))
-	  	end
-	  end
-    push!(gatesCommand,Expr(:call,:hadamard,:svec,i,false))
-    push!(gatesCommand,Expr(:call,:phase,:svec,i,false))
-	end
-push!(gatesCommand,Expr(:call,:noop))
-
-
-#Make them, not sure why I don't just save them!
-
-sl2Cliffords= Array{Complex{Float64},2}[]
-sl2CliffordCommands = Array{String,1}[]
-n=60#*4*4
-for i=1:60
-    for j=1:4
-        for z=1:4
-            t=Tableau(2)
-            t.state[:,1:4]=stabs[i]
-            decomposeState(t)
-            commands = t.commands
-            #Apply the PAULIS!
-            if (j==2)
-                push!(commands,"hadamard(1)")
-                push!(commands,"phase(1)")
-                push!(commands,"phase(1)")
-                push!(commands,"hadamard(1)")
-            elseif (j==3)
-                push!(commands,"phase(1)")
-                push!(commands,"phase(1)")
-            elseif (j==4)
-                push!(commands,"phase(1)")
-                push!(commands,"phase(1)")
-                push!(commands,"hadamard(1)")
-                push!(commands,"phase(1)")
-                push!(commands,"phase(1)")
-                push!(commands,"hadamard(1)")
-            end
-            if (z==2)
-                push!(commands,"hadamard(2)")
-                push!(commands,"phase(2)")
-                push!(commands,"phase(2)")
-                push!(commands,"hadamard(2)")
-            elseif (z==3)
-                push!(commands,"phase(2)")
-                push!(commands,"phase(2)")
-            elseif (z==4)
-                push!(commands,"phase(2)")
-                push!(commands,"phase(2)")
-                push!(commands,"hadamard(2)")
-                push!(commands,"phase(2)")
-                push!(commands,"phase(2)")
-                push!(commands,"hadamard(2)")
-            end
-            push!(sl2CliffordCommands,commands)
-            push!(sl2Cliffords,makeFromCommand(commands))
-       end
-    end
-end
-
-
-try
-    display("text/markdown","3 of 3, all Cleve cliffords found.")
-catch
-    print("3 of 3, all Cleve cliffords found.\n")
-end
-
-
-sl60_2Cliffords= Array{Complex{Float64},2}[]
-sl60_2CliffordCommands = Array{String,1}[]
-n=60#*4*4
-for i=1:60
-       t=Tableau(2)
-       t.state[:,1:4]=stabs[i]
-       decomposeState(t)
-       commands = t.commands
-       push!(sl60_2CliffordCommands,commands)
-       push!(sl60_2Cliffords,makeFromCommand(commands))
-end
-
-super60_sl2=[makeSuper(i) for i in sl60_2Cliffords];
-
-
-supersl2=[makeSuper(i) for i in sl2Cliffords];
 
 try
     display("text/markdown","Created:\n   ")
     display("text/markdown","- **FullCliffords** - all two qubit cliffords")
     display("text/markdown","- **SuperCliffs** - two qubit cliffords as superOperators in the Pauli basis")
-    display("text/markdown","- **sl60_2Cliffords** - the cleve 60 2 qubits and **super60_sl2**")
-    display("text/markdown","- **sl2Cliffords** - the cleve 60 twirled by 16 paulis and **supersl2**")
     display("text/markdown","- **singleReals** and **doubleReals** the index of the real cliffords into the full clifford arrays")
 catch 
     print("Created:\n")
     print("\t- **FullCliffords** - all two qubit cliffords\n")
     print("\t- **SuperCliffs** - two qubit cliffords as superOperators in the Pauli basis\n")
-    print("\t- **sl60_2Cliffords** - the cleve 60 2 qubits and **super60_sl2**\n")
-    print("\t- **sl2Cliffords** - the cleve 60 twirled by 16 paulis and **supersl2**\n")
     print("\t- **singleReals** and **doubleReals** the index of the real cliffords into the full clifford arrays\n")
 end
