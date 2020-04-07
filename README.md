@@ -1,4 +1,7 @@
 # Juqst: JUlia Quantum Simulator Toolbox
+
+This is an old archive - almost all of the functionality (and a lot more besides) has been re-implemented as a Julia module which can be found at [https://github.com/rharper2/Juqst.jl](https://github.com/rharper2/Juqst.jl).
+
 ## Beginning of a quantum simulator toolbox, primarily written in the Julia Language
 
 ### Done:
